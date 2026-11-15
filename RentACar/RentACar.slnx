@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="RentACar.Model/RentACar.Model.csproj" />
+  <Project Path="RentACar.Services/RentACar.Services.csproj" />
+  <Project Path="RentACar.WebAPI/RentACar.WebAPI.csproj" />
+  <Project Path="RentACar.Worker/RentACar.Worker.csproj" />
+</Solution>
