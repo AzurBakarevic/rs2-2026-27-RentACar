@@ -1,6 +1,6 @@
 namespace RentACar.Services.Database;
 
-public class FuelType
+public class FuelType : IEntity
 {
     public int Id { get; set; }
     public string Name { get; set; } = null!;
