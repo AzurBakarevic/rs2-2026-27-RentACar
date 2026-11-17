@@ -1,3 +1,5 @@
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -18,6 +20,12 @@ public class ExceptionFilter : ExceptionFilterAttribute
     private const int SqlUniqueIndexViolation = 2601;
     private const int SqlUniqueConstraintViolation = 2627;
     private const int SqlForeignKeyViolation = 547;
+
+    // Za odgovore koji se pišu direktno (401/403 iz JWT provjere): č, ć, š, ž, đ se ne escapuju, kao u ObjectResult-u.
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
 
     private readonly ILogger<ExceptionFilter> _logger;
 
@@ -52,6 +60,12 @@ public class ExceptionFilter : ExceptionFilterAttribute
                 context.ModelState.AddModelError(ClientErrorKey, "Traženi zapis nije pronađen.");
                 status = StatusCodes.Status404NotFound;
                 _logger.LogInformation("{Message} ({Method} {Path})", context.Exception.Message, request.Method, request.Path);
+                break;
+
+            case UnauthorizedAccessException:
+                context.ModelState.AddModelError(ClientErrorKey, "Niste prijavljeni.");
+                status = StatusCodes.Status401Unauthorized;
+                _logger.LogWarning("Unauthorized access on {Method} {Path}.", request.Method, request.Path);
                 break;
 
             // Rezerva ako dva zahtjeva u isto vrijeme prođu provjeru u servisu, pa baza odbije drugi.
@@ -94,6 +108,15 @@ public class ExceptionFilter : ExceptionFilterAttribute
         {
             [ClientErrorKey] = ["Zahtjev nije ispravnog formata."]
         });
+    }
+
+    // Isti oblik greške za odgovore koji ne prolaze kroz MVC (npr. 401 i 403 iz JWT autentifikacije).
+    public static Task WriteErrorAsync(HttpResponse response, int status, string message)
+    {
+        response.StatusCode = status;
+        var errors = new Dictionary<string, List<string>> { [ClientErrorKey] = [message] };
+
+        return response.WriteAsJsonAsync(new { message, errors }, JsonOptions);
     }
 
     // ObjectResult (a ne JsonResult) ide kroz isti JSON formatter kao uspješni odgovori, pa se č, ć, š, ž, đ ne escapuju.

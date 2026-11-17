@@ -14,6 +14,40 @@ public static class DatabaseSeed
             new Role { Id = 1, Name = RoleNames.Administrator },
             new Role { Id = 2, Name = RoleNames.Customer });
 
+        // Testni nalozi iz uputa 5 (lozinka za oba: "test"). Hash i salt su unaprijed izračunati
+        // istim algoritmom kao CryptoService (PBKDF2-SHA256, 100 000 iteracija), jer HasData traži fiksne vrijednosti.
+        modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                Id = 1,
+                FirstName = "Desktop",
+                LastName = "Administrator",
+                Email = "desktop@rentacar.ba",
+                PhoneNumber = "+387 61 000 001",
+                Username = "desktop",
+                PasswordHash = "bpKhlFuFnXOr/mgD1B3opMA3Kwvj6BtWeeD6HNxMKs4=",
+                PasswordSalt = "XFq/dUV9C+XN/eJuP7yecQ==",
+                IsActive = true,
+                CreatedAt = SeedDate,
+                RoleId = 1
+            },
+            new User
+            {
+                Id = 2,
+                FirstName = "Mobile",
+                LastName = "Korisnik",
+                Email = "mobile@rentacar.ba",
+                PhoneNumber = "+387 61 000 002",
+                Username = "mobile",
+                PasswordHash = "2Wg9Cdny4XenV98HS7I2Dta6f4KdSPy2ZBspXxtBgsU=",
+                PasswordSalt = "4nkpZcAsz3yJjiRaT/LzfQ==",
+                DriverLicenseNumber = "B1234567",
+                DriverLicenseValidUntil = new DateOnly(2030, 12, 31),
+                IsActive = true,
+                CreatedAt = SeedDate,
+                RoleId = 2
+            });
+
         modelBuilder.Entity<Brand>().HasData(
             new Brand { Id = 1, Name = "Volkswagen" },
             new Brand { Id = 2, Name = "Škoda" },

@@ -25,6 +25,10 @@ public abstract class BaseReadService<TEntity, TResponse, TSearch> : IBaseReadSe
         _dbContext = dbContext;
     }
 
+    // Osnovni upit nad tabelom za sve operacije; izvedeni servis ga može suziti
+    // (npr. UserService izbacuje logički obrisane korisnike).
+    protected virtual IQueryable<TEntity> GetQuery() => _dbContext.Set<TEntity>();
+
     // Uslovi iz search objekta (Where se prevodi u SQL).
     protected abstract IQueryable<TEntity> ApplyFilters(IQueryable<TEntity> query, TSearch search);
 
@@ -35,7 +39,7 @@ public abstract class BaseReadService<TEntity, TResponse, TSearch> : IBaseReadSe
     {
         search ??= new TSearch();
 
-        var query = ApplyFilters(_dbContext.Set<TEntity>().AsNoTracking(), search);
+        var query = ApplyFilters(GetQuery().AsNoTracking(), search);
 
         int? totalCount = null;
         if (search.IncludeTotalCount ?? false)
@@ -63,7 +67,7 @@ public abstract class BaseReadService<TEntity, TResponse, TSearch> : IBaseReadSe
 
     public virtual async Task<TResponse> GetByIdAsync(int id)
     {
-        var item = await _dbContext.Set<TEntity>()
+        var item = await GetQuery()
             .AsNoTracking()
             .Where(x => x.Id == id)
             .ProjectToType<TResponse>(_mapper.Config)

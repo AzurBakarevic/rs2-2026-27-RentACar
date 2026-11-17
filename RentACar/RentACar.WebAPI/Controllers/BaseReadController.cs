@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentACar.Model.Responses;
 using RentACar.Model.SearchObjects;
@@ -7,6 +8,8 @@ namespace RentACar.WebAPI.Controllers;
 
 // Generički kontroler za čitanje: GET /{kontroler}?Page=1&PageSize=10&IncludeTotalCount=true i GET /{kontroler}/{id}.
 // Izuzetke (npr. nepostojeći Id → 404) pretvara ExceptionFilter, pa ovdje nema try/catch.
+// [Authorize] važi i za sve izvedene kontrolere: bez prijave nema pristupa (upute 5).
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public abstract class BaseReadController<TResponse, TSearch, TService> : ControllerBase
