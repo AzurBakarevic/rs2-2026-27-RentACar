@@ -7,6 +7,8 @@ using RentACar.Services.Interfaces;
 using RentACar.Services.Validators;
 using RentACar.WebAPI.Extensions;
 using RentACar.WebAPI.Filters;
+using RentACar.WebAPI.Services;
+using RentACar.WebAPI.Services.AccessManager;
 using Scalar.AspNetCore;
 
 // Učitava .env (traži ga od trenutnog foldera naviše); varijable koje su već postavljene (npr. iz Dockera) se ne mijenjaju.
@@ -24,13 +26,20 @@ builder.Services.AddControllers(options =>
     })
     // Neispravan JSON ili pogrešan tip vrijednosti: isti oblik greške kao iz ExceptionFilter-a.
     .ConfigureApiBehaviorOptions(options => options.InvalidModelStateResponseFactory = ExceptionFilter.InvalidModelState);
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddRentACarOpenApi();
 builder.Services.AddRentACarDatabase(builder.Configuration);
+builder.Services.AddRentACarAuthentication(builder.Configuration);
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
 
 // Mapster mapira svojstva istog naziva; BrandName u odgovoru se puni iz Brand.Name bez dodatne konfiguracije.
 builder.Services.AddMapster();
 
+builder.Services.AddScoped<IAuthenticatedUserAccessor, HttpAuthenticatedUserAccessor>();
+builder.Services.AddScoped<ICryptoService, CryptoService>();
+builder.Services.AddScoped<IAccessManager, AccessManager>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<IVehicleModelService, VehicleModelService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -47,6 +56,12 @@ builder.Services.AddScoped<IValidator<FuelTypeInsertRequest>, FuelTypeInsertVali
 builder.Services.AddScoped<IValidator<FuelTypeUpdateRequest>, FuelTypeUpdateValidator>();
 builder.Services.AddScoped<IValidator<TransmissionTypeInsertRequest>, TransmissionTypeInsertValidator>();
 builder.Services.AddScoped<IValidator<TransmissionTypeUpdateRequest>, TransmissionTypeUpdateValidator>();
+builder.Services.AddScoped<IValidator<UserInsertRequest>, UserInsertValidator>();
+builder.Services.AddScoped<IValidator<UserUpdateRequest>, UserUpdateValidator>();
+builder.Services.AddScoped<IValidator<UserLoginRequest>, UserLoginValidator>();
+builder.Services.AddScoped<IValidator<UserRegisterRequest>, UserRegisterValidator>();
+builder.Services.AddScoped<IValidator<UserProfileUpdateRequest>, UserProfileUpdateValidator>();
+builder.Services.AddScoped<IValidator<UserPasswordChangeRequest>, UserPasswordChangeValidator>();
 
 var app = builder.Build();
 
@@ -59,6 +74,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

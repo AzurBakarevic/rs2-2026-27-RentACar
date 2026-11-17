@@ -699,6 +699,9 @@ namespace RentACar.Services.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
+                    b.Property<int>("TokenVersion")
+                        .HasColumnType("int");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -717,6 +720,42 @@ namespace RentACar.Services.Migrations
                         .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "desktop@rentacar.ba",
+                            FirstName = "Desktop",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Administrator",
+                            PasswordHash = "bpKhlFuFnXOr/mgD1B3opMA3Kwvj6BtWeeD6HNxMKs4=",
+                            PasswordSalt = "XFq/dUV9C+XN/eJuP7yecQ==",
+                            PhoneNumber = "+387 61 000 001",
+                            RoleId = 1,
+                            TokenVersion = 0,
+                            Username = "desktop"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B1234567",
+                            DriverLicenseValidUntil = new DateOnly(2030, 12, 31),
+                            Email = "mobile@rentacar.ba",
+                            FirstName = "Mobile",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Korisnik",
+                            PasswordHash = "2Wg9Cdny4XenV98HS7I2Dta6f4KdSPy2ZBspXxtBgsU=",
+                            PasswordSalt = "4nkpZcAsz3yJjiRaT/LzfQ==",
+                            PhoneNumber = "+387 61 000 002",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "mobile"
+                        });
                 });
 
             modelBuilder.Entity("RentACar.Services.Database.Vehicle", b =>

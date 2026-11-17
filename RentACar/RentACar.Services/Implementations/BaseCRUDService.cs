@@ -1,5 +1,6 @@
 using FluentValidation;
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using RentACar.Model.SearchObjects;
 using RentACar.Services.Database;
 using RentACar.Services.Interfaces;
@@ -48,7 +49,7 @@ public abstract class BaseCRUDService<TEntity, TResponse, TSearch, TInsertReques
     {
         await _updateValidator.ValidateAndThrowAsync(request);
 
-        var entity = await _dbContext.Set<TEntity>().FindAsync(id)
+        var entity = await GetQuery().FirstOrDefaultAsync(x => x.Id == id)
             ?? throw new KeyNotFoundException($"{typeof(TEntity).Name} with id {id} not found.");
 
         MapUpdateRequestToEntity(request, entity);
@@ -63,7 +64,7 @@ public abstract class BaseCRUDService<TEntity, TResponse, TSearch, TInsertReques
     // Fizičko brisanje. Entitet koji se briše logički (npr. korisnik s IsDeleted) treba prepisati ovu metodu.
     public virtual async Task DeleteAsync(int id)
     {
-        var entity = await _dbContext.Set<TEntity>().FindAsync(id)
+        var entity = await GetQuery().FirstOrDefaultAsync(x => x.Id == id)
             ?? throw new KeyNotFoundException($"{typeof(TEntity).Name} with id {id} not found.");
 
         await BeforeDeleteAsync(entity);
