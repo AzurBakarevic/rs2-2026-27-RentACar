@@ -1,0 +1,28 @@
+name: rentacar
+
+services:
+  rentacar-sql:
+    image: mcr.microsoft.com/mssql/server:2022-CU28-ubuntu-22.04
+    container_name: rentacar-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    ports:
+      - "${SQL_HOST_PORT}:1433"
+    volumes:
+      - rentacar-sql-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q \"SELECT 1\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - rentacar
+
+volumes:
+  rentacar-sql-data:
+
+networks:
+  rentacar:
