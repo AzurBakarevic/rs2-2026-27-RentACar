@@ -1,6 +1,6 @@
 namespace RentACar.Services.Database;
 
-public class VehicleModel
+public class VehicleModel : IEntity
 {
     public int Id { get; set; }
     public string Name { get; set; } = null!;
