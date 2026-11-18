@@ -1,4 +1,5 @@
 using Mapster;
+using RentACar.Model.Enums;
 using RentACar.Model.Responses;
 using RentACar.Services.Database;
 
@@ -21,5 +22,26 @@ public class MappingConfig : IRegister
 
         config.NewConfig<VehicleMaintenance, VehicleMaintenanceResponse>()
             .Map(dest => dest.VehicleName, src => src.Vehicle.VehicleModel.Brand.Name + " " + src.Vehicle.VehicleModel.Name);
+
+        // Oprema i historija statusa se ne mapiraju ovdje: puni ih samo GetByIdAsync, posebnim upitima,
+        // da lista rezervacija ne čita te tabele. AllowedActions računa state machine.
+        config.NewConfig<Reservation, ReservationResponse>()
+            .Map(dest => dest.UserFullName, src => src.User.FirstName + " " + src.User.LastName)
+            .Map(dest => dest.VehicleName, src => src.Vehicle.VehicleModel.Brand.Name + " " + src.Vehicle.VehicleModel.Name)
+            .Map(dest => dest.VehicleHasImage, src => src.Vehicle.Image != null)
+            .Map(dest => dest.IsPaid, src => src.Payments.Any(p => p.Status == PaymentStatus.Paid))
+            .Map(dest => dest.CancellationReason,
+                src => src.StatusHistory.Where(h => h.NewStatus == ReservationStatus.Cancelled).Select(h => h.Reason).FirstOrDefault())
+            .Ignore(dest => dest.AllowedActions)
+            .Ignore(dest => dest.Equipment!)
+            .Ignore(dest => dest.StatusHistory!);
+
+        config.NewConfig<ReservationEquipment, ReservationEquipmentResponse>()
+            .Map(dest => dest.TotalPrice, src => src.Quantity * src.PricePerDay * src.Reservation.RentalDays);
+
+        // null = promjenu je izvršio sistem.
+        config.NewConfig<ReservationStatusHistory, ReservationStatusHistoryResponse>()
+            .Map(dest => dest.ChangedByName,
+                src => src.ChangedByUser != null ? src.ChangedByUser.FirstName + " " + src.ChangedByUser.LastName : null);
     }
 }
