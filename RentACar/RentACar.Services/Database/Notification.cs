@@ -1,6 +1,6 @@
 namespace RentACar.Services.Database;
 
-public class Notification
+public class Notification : IEntity
 {
     public int Id { get; set; }
     public string Title { get; set; } = null!;
