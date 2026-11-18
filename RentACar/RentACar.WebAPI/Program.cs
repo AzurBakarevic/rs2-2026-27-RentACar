@@ -5,6 +5,7 @@ using RentACar.Model.Requests;
 using RentACar.Services.Implementations;
 using RentACar.Services.Interfaces;
 using RentACar.Services.Mapping;
+using RentACar.Services.ReservationStateMachine;
 using RentACar.Services.Validators;
 using RentACar.WebAPI.Extensions;
 using RentACar.WebAPI.Filters;
@@ -53,6 +54,17 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 builder.Services.AddScoped<IVehicleMaintenanceService, VehicleMaintenanceService>();
 builder.Services.AddScoped<ISeasonalPriceService, SeasonalPriceService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ReservationCalculator>();
+
+// Stanja rezervacije (kao ProductStateMachine kod profesora); BaseReservationState bira stanje po statusu.
+builder.Services.AddScoped<BaseReservationState>();
+builder.Services.AddScoped<InitialReservationState>();
+builder.Services.AddScoped<PendingReservationState>();
+builder.Services.AddScoped<ConfirmedReservationState>();
+builder.Services.AddScoped<CompletedReservationState>();
+builder.Services.AddScoped<CancelledReservationState>();
 
 builder.Services.AddScoped<IValidator<BrandInsertRequest>, BrandInsertValidator>();
 builder.Services.AddScoped<IValidator<BrandUpdateRequest>, BrandUpdateValidator>();
@@ -79,6 +91,9 @@ builder.Services.AddScoped<IValidator<VehicleMaintenanceInsertRequest>, VehicleM
 builder.Services.AddScoped<IValidator<VehicleMaintenanceUpdateRequest>, VehicleMaintenanceUpdateValidator>();
 builder.Services.AddScoped<IValidator<SeasonalPriceInsertRequest>, SeasonalPriceInsertValidator>();
 builder.Services.AddScoped<IValidator<SeasonalPriceUpdateRequest>, SeasonalPriceUpdateValidator>();
+builder.Services.AddScoped<IValidator<ReservationInsertRequest>, ReservationInsertValidator>();
+builder.Services.AddScoped<IValidator<ReservationRejectRequest>, ReservationRejectValidator>();
+builder.Services.AddScoped<IValidator<ReservationCancelRequest>, ReservationCancelValidator>();
 
 var app = builder.Build();
 

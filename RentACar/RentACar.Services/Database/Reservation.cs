@@ -2,7 +2,7 @@ using RentACar.Model.Enums;
 
 namespace RentACar.Services.Database;
 
-public class Reservation
+public class Reservation : IEntity
 {
     public int Id { get; set; }
     public DateTime PickupAt { get; set; }
