@@ -13,8 +13,9 @@ namespace RentACar.Services.ReservationStateMachine;
 
 // Centralizovana state machine rezervacije (prijava, upute 7), po obrascu iz profesorovog V3 (ProductStateMachine):
 // svako stanje je klasa koja prepisuje samo akcije dozvoljene u tom stanju, a ostale akcije bacaju grešku.
-// Dozvoljeni prelazi: Na čekanju → Potvrđena → Završena; Na čekanju → Otkazana (odbijanje ili otkazivanje);
-// Potvrđena → Otkazana. Završena i otkazana rezervacija se više ne mijenjaju.
+// Dozvoljeni prelazi: Na čekanju → Potvrđena → Završena; Na čekanju → Otkazana (odbijanje, otkazivanje ili istek roka
+// za plaćanje); Potvrđena → Otkazana. Završena i otkazana rezervacija se više ne mijenjaju.
+// Pri odbijanju i otkazivanju plaćena uplata se vraća, a otvoreno plaćanje poništava (ReservationPaymentHandler).
 //
 // Razlika od profesora: akcija dobija već učitanu (i zaključanu) rezervaciju umjesto Id-a, a ne sprema promjene sama.
 // ReservationService otvara transakciju, poziva stanje i sprema sve odjednom (status, historiju i notifikaciju).
@@ -42,6 +43,10 @@ public class BaseReservationState
 
     public virtual Task CancelAsync(Reservation reservation, string? reason) => throw NotAllowed(reservation);
 
+    // Sistemska akcija pozadinskog posla: otkazuje rezervaciju koja nije plaćena u roku. Vraća true ako je otkazana.
+    // Rezervacija je u međuvremenu mogla promijeniti stanje, pa u ostalim stanjima nema šta da se radi (bez greške).
+    public virtual Task<bool> ExpireAsync(Reservation reservation) => Task.FromResult(false);
+
     // Akcije (ReservationActions) koje prijavljeni korisnik sada smije izvršiti; u završnim stanjima nema nijedne.
     public virtual List<string> GetAllowedActions(ReservationResponse reservation) => [];
 
@@ -60,6 +65,7 @@ public class BaseReservationState
 
     // Mijenja status i dodaje zapis u historiju (ko i kada, prijava) i notifikaciju za korisnika.
     // Sve se sprema zajedno, pa ne može ostati promjena statusa bez historije ili notifikacije.
+    // Bez prijavljenog korisnika (pozadinski posao) ChangedByUserId ostaje null, što znači "sistem".
     protected async Task ChangeStatusAsync(Reservation reservation, ReservationStatus newStatus, string? reason,
         Func<Reservation, string, Notification> createNotification)
     {

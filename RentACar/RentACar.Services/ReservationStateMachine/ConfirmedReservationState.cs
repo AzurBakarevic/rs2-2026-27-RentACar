@@ -4,17 +4,22 @@ using RentACar.Model.Exceptions;
 using RentACar.Model.Responses;
 using RentACar.Services.Database;
 using RentACar.Services.Helpers;
+using RentACar.Services.Implementations;
 using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.ReservationStateMachine;
 
 // Potvrđena: administrator je nakon vraćanja vozila označava kao završenu ili je izuzetno otkazuje,
-// a korisnik je može otkazati najkasnije 24 sata prije preuzimanja.
+// a korisnik je može otkazati najkasnije 24 sata prije preuzimanja. Pri otkazivanju se uplata vraća u cijelosti.
 public class ConfirmedReservationState : BaseReservationState
 {
-    public ConfirmedReservationState(RentACarDbContext dbContext, IAuthenticatedUserAccessor authenticatedUser, IServiceProvider serviceProvider)
+    private readonly ReservationPaymentHandler _paymentHandler;
+
+    public ConfirmedReservationState(RentACarDbContext dbContext, IAuthenticatedUserAccessor authenticatedUser, IServiceProvider serviceProvider,
+        ReservationPaymentHandler paymentHandler)
         : base(dbContext, authenticatedUser, serviceProvider)
     {
+        _paymentHandler = paymentHandler;
     }
 
     // Najam se može završiti tek kad je vozilo preuzeto; vraćanje prije dogovorenog kraja je dozvoljeno.
@@ -30,20 +35,25 @@ public class ConfirmedReservationState : BaseReservationState
 
     // Prijava: administrator izuzetno otkazuje potvrđenu rezervaciju prije preuzimanja ili u toku najma
     // (npr. zbog kvara vozila), uz obavezan razlog (provjerava ReservationCancelValidator).
-    public override Task CancelAsync(Reservation reservation, string? reason)
+    // U oba slučaja korisniku se vraća uplaćeni iznos (prijava).
+    public override async Task CancelAsync(Reservation reservation, string? reason)
     {
         if (!IsAdministrator)
         {
-            return CancelByCustomerAsync(reservation, reason);
+            await CancelByCustomerAsync(reservation, reason);
         }
-
-        if (DateTime.UtcNow >= reservation.ReturnAt)
+        else
         {
-            throw new ClientException("Period najma je istekao, pa se rezervacija ne može otkazati. Označite je kao završenu.");
+            if (DateTime.UtcNow >= reservation.ReturnAt)
+            {
+                throw new ClientException("Period najma je istekao, pa se rezervacija ne može otkazati. Označite je kao završenu.");
+            }
+
+            await ChangeStatusAsync(reservation, ReservationStatus.Cancelled, reason,
+                (r, vehicleName) => ReservationNotifications.CancelledByAdministrator(r, vehicleName, reason!));
         }
 
-        return ChangeStatusAsync(reservation, ReservationStatus.Cancelled, reason,
-            (r, vehicleName) => ReservationNotifications.CancelledByAdministrator(r, vehicleName, reason!));
+        await _paymentHandler.ReleaseAsync(reservation);
     }
 
     public override List<string> GetAllowedActions(ReservationResponse reservation)
