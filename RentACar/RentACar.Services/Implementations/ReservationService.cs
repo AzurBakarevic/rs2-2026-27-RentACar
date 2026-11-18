@@ -3,6 +3,7 @@ using Mapster;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using RentACar.Model.Constants;
+using RentACar.Model.Enums;
 using RentACar.Model.Requests;
 using RentACar.Model.Responses;
 using RentACar.Model.SearchObjects;
@@ -107,13 +108,14 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
 
         foreach (var item in result.Items)
         {
+            item.PaymentDeadline = PaymentRules.GetPaymentDeadline(item.CreatedAt);
             item.AllowedActions = GetAllowedActions(item);
         }
 
         return result;
     }
 
-    // Detalji: uz osnovne podatke još oprema i historija statusa, svaka jednim upitom (bez N+1, upute 8.2).
+    // Detalji: uz osnovne podatke još oprema, uplata i historija statusa, svaka jednim upitom (bez N+1, upute 8.2).
     public override async Task<ReservationResponse> GetByIdAsync(int id)
     {
         var reservation = await base.GetByIdAsync(id);
@@ -125,6 +127,13 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
             .ProjectToType<ReservationEquipmentResponse>(_mapper.Config)
             .ToListAsync();
 
+        // Poništena plaćanja (npr. istekao rok) se ne prikazuju; aktivna uplata je najviše jedna (jedinstveni indeks).
+        reservation.Payment = await _dbContext.Payments
+            .AsNoTracking()
+            .Where(x => x.ReservationId == id && x.Status != PaymentStatus.Cancelled)
+            .ProjectToType<ReservationPaymentResponse>(_mapper.Config)
+            .FirstOrDefaultAsync();
+
         reservation.StatusHistory = await _dbContext.ReservationStatusHistory
             .AsNoTracking()
             .Where(x => x.ReservationId == id)
@@ -133,6 +142,7 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
             .ProjectToType<ReservationStatusHistoryResponse>(_mapper.Config)
             .ToListAsync();
 
+        reservation.PaymentDeadline = PaymentRules.GetPaymentDeadline(reservation.CreatedAt);
         reservation.AllowedActions = GetAllowedActions(reservation);
 
         return reservation;
@@ -199,6 +209,7 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
 
         var reservation = await RestrictToCurrentUser(
                 _dbContext.Reservations.FromSql($"SELECT * FROM Reservations WITH (UPDLOCK, ROWLOCK) WHERE Id = {id}"))
+            .Where(x => x.Id == id)
             .FirstOrDefaultAsync()
             ?? throw new KeyNotFoundException($"Reservation with id {id} not found.");
 
