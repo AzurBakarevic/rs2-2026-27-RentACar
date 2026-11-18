@@ -1,6 +1,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using FluentValidation;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Data.SqlClient;
@@ -103,6 +104,16 @@ public class ExceptionFilter : ExceptionFilterAttribute
         var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<ExceptionFilter>>();
         logger.LogWarning("Invalid request on {Method} {Path}: {Errors}", request.Method, request.Path,
             string.Join(" | ", context.ModelState.SelectMany(x => x.Value!.Errors.Select(e => $"{x.Key}: {e.ErrorMessage}"))));
+
+        // Tijelo veće od dozvoljenog (npr. prevelika slika na uploadu): server ga ni ne čita, pa je to 413, a ne loš format.
+        var maxBodySize = context.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>()?.MaxRequestBodySize;
+        if (request.ContentLength > maxBodySize)
+        {
+            return CreateResult(StatusCodes.Status413PayloadTooLarge, new Dictionary<string, List<string>>
+            {
+                [ClientErrorKey] = ["Poslani fajl je prevelik."]
+            });
+        }
 
         return CreateResult(StatusCodes.Status400BadRequest, new Dictionary<string, List<string>>
         {

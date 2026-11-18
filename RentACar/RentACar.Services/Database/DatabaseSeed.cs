@@ -6,7 +6,7 @@ namespace RentACar.Services.Database;
 public static class DatabaseSeed
 {
     // HasData traži fiksne vrijednosti, inače bi svaka nova migracija mijenjala seed.
-    private static readonly DateTime SeedDate = new(2026, 11, 1, 0, 0, 0, DateTimeKind.Utc);
+    internal static readonly DateTime SeedDate = new(2026, 11, 1, 0, 0, 0, DateTimeKind.Utc);
 
     public static void Seed(this ModelBuilder modelBuilder)
     {

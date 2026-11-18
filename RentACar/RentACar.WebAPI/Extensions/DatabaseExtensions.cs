@@ -22,14 +22,22 @@ public static class DatabaseExtensions
     }
 
     // Primjenjuje migracije (i seed) pri pokretanju, da baza bude spremna bez ručnog "dotnet ef database update" (upute 9.1).
-    public static void MigrateDatabase(this WebApplication app)
+    public static async Task MigrateDatabaseAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
         var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(DatabaseExtensions));
         var dbContext = scope.ServiceProvider.GetRequiredService<RentACarDbContext>();
 
         logger.LogInformation("Applying database migrations...");
-        dbContext.Database.Migrate();
+        await dbContext.Database.MigrateAsync();
+
+        // Slike seedanih vozila nisu u migracijama (vidi DatabaseImageSeed).
+        var seededImages = await dbContext.SeedVehicleImagesAsync();
+        if (seededImages > 0)
+        {
+            logger.LogInformation("Seeded images for {Count} vehicles.", seededImages);
+        }
+
         logger.LogInformation("Database is up to date.");
     }
 }

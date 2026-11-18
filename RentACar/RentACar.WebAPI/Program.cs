@@ -4,6 +4,7 @@ using Mapster;
 using RentACar.Model.Requests;
 using RentACar.Services.Implementations;
 using RentACar.Services.Interfaces;
+using RentACar.Services.Mapping;
 using RentACar.Services.Validators;
 using RentACar.WebAPI.Extensions;
 using RentACar.WebAPI.Filters;
@@ -34,17 +35,24 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
 
 // Mapster mapira svojstva istog naziva; BrandName u odgovoru se puni iz Brand.Name bez dodatne konfiguracije.
+// Ono što se ne može izvesti iz naziva (npr. prosječna ocjena vozila) je u MappingConfig.
 builder.Services.AddMapster();
+TypeAdapterConfig.GlobalSettings.Scan(typeof(MappingConfig).Assembly);
 
 builder.Services.AddScoped<IAuthenticatedUserAccessor, HttpAuthenticatedUserAccessor>();
 builder.Services.AddScoped<ICryptoService, CryptoService>();
 builder.Services.AddScoped<IAccessManager, AccessManager>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<IVehicleModelService, VehicleModelService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IFuelTypeService, FuelTypeService>();
 builder.Services.AddScoped<ITransmissionTypeService, TransmissionTypeService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+builder.Services.AddScoped<IVehicleMaintenanceService, VehicleMaintenanceService>();
+builder.Services.AddScoped<ISeasonalPriceService, SeasonalPriceService>();
 
 builder.Services.AddScoped<IValidator<BrandInsertRequest>, BrandInsertValidator>();
 builder.Services.AddScoped<IValidator<BrandUpdateRequest>, BrandUpdateValidator>();
@@ -62,10 +70,19 @@ builder.Services.AddScoped<IValidator<UserLoginRequest>, UserLoginValidator>();
 builder.Services.AddScoped<IValidator<UserRegisterRequest>, UserRegisterValidator>();
 builder.Services.AddScoped<IValidator<UserProfileUpdateRequest>, UserProfileUpdateValidator>();
 builder.Services.AddScoped<IValidator<UserPasswordChangeRequest>, UserPasswordChangeValidator>();
+builder.Services.AddScoped<IValidator<VehicleInsertRequest>, VehicleInsertValidator>();
+builder.Services.AddScoped<IValidator<VehicleUpdateRequest>, VehicleUpdateValidator>();
+builder.Services.AddScoped<IValidator<ImageUploadRequest>, ImageUploadValidator>();
+builder.Services.AddScoped<IValidator<EquipmentInsertRequest>, EquipmentInsertValidator>();
+builder.Services.AddScoped<IValidator<EquipmentUpdateRequest>, EquipmentUpdateValidator>();
+builder.Services.AddScoped<IValidator<VehicleMaintenanceInsertRequest>, VehicleMaintenanceInsertValidator>();
+builder.Services.AddScoped<IValidator<VehicleMaintenanceUpdateRequest>, VehicleMaintenanceUpdateValidator>();
+builder.Services.AddScoped<IValidator<SeasonalPriceInsertRequest>, SeasonalPriceInsertValidator>();
+builder.Services.AddScoped<IValidator<SeasonalPriceUpdateRequest>, SeasonalPriceUpdateValidator>();
 
 var app = builder.Build();
 
-app.MigrateDatabase();
+await app.MigrateDatabaseAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
