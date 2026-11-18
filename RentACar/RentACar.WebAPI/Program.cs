@@ -7,6 +7,7 @@ using RentACar.Services.Interfaces;
 using RentACar.Services.Mapping;
 using RentACar.Services.ReservationStateMachine;
 using RentACar.Services.Validators;
+using RentACar.WebAPI.BackgroundServices;
 using RentACar.WebAPI.Extensions;
 using RentACar.WebAPI.Filters;
 using RentACar.WebAPI.Services;
@@ -31,6 +32,7 @@ builder.Services.AddControllers(options =>
 builder.Services.AddRentACarOpenApi();
 builder.Services.AddRentACarDatabase(builder.Configuration);
 builder.Services.AddRentACarAuthentication(builder.Configuration);
+builder.Services.AddRentACarStripe(builder.Configuration);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
@@ -57,6 +59,12 @@ builder.Services.AddScoped<ISeasonalPriceService, SeasonalPriceService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ReservationCalculator>();
+builder.Services.AddScoped<ReservationPaymentHandler>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IReservationJobService, ReservationJobService>();
+
+// Istek roka za plaćanje (15 min) i podsjetnik dan prije preuzimanja, svake minute.
+builder.Services.AddHostedService<ReservationJobsBackgroundService>();
 
 // Stanja rezervacije (kao ProductStateMachine kod profesora); BaseReservationState bira stanje po statusu.
 builder.Services.AddScoped<BaseReservationState>();
