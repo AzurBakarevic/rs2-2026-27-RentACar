@@ -11,6 +11,9 @@ public static class ReservationRules
     // Korisnik može otkazati rezervaciju najkasnije 24 sata prije preuzimanja vozila (prijava).
     public const int CustomerCancellationNoticeHours = 24;
 
+    // Podsjetnik se šalje dan (24 sata) prije preuzimanja vozila (prijava).
+    public const int PickupReminderHours = 24;
+
     // Svaki započeti period od 24 sata najma računa se kao jedan dan (prijava), npr. 24 h = 1, 25 h = 2, 48 h = 2 dana (upute 7).
     public static int GetRentalDays(DateTime pickupAt, DateTime returnAt)
     {

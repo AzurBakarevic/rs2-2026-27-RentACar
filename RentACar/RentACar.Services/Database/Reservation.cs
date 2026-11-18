@@ -15,6 +15,9 @@ public class Reservation : IEntity
     public ReservationStatus Status { get; set; } = ReservationStatus.Pending;
     public DateTime CreatedAt { get; set; }
 
+    // Kada je poslan podsjetnik dan prije preuzimanja (null = još nije), da se ne pošalje dva puta.
+    public DateTime? ReminderSentAt { get; set; }
+
     public int UserId { get; set; }
     public User User { get; set; } = null!;
 

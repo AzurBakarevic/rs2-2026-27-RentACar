@@ -372,6 +372,9 @@ namespace RentACar.Services.Migrations
                     b.Property<DateTime>("PickupAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("ReminderSentAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("RentalDays")
                         .HasColumnType("int");
 

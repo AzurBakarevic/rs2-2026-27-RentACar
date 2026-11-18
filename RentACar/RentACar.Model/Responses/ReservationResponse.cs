@@ -3,7 +3,7 @@ using RentACar.Model.Enums;
 namespace RentACar.Model.Responses;
 
 // Isti odgovor za listu i detalje (kao ProductResponse kod profesora): detalji (GET /Reservations/{id})
-// dodatno pune opremu i historiju statusa, a u listi su ta dva polja null.
+// dodatno pune opremu, podatke o uplati i historiju statusa, a u listi su ta polja null.
 public class ReservationResponse
 {
     public int Id { get; set; }
@@ -19,6 +19,9 @@ public class ReservationResponse
 
     // Oznaka "Plaćeno" (prijava); administrator potvrđuje samo plaćenu rezervaciju.
     public bool IsPaid { get; set; }
+
+    // Do kada se rezervacija može platiti (15 minuta od kreiranja); neplaćena se nakon toga automatski otkazuje.
+    public DateTime PaymentDeadline { get; set; }
 
     // Razlog odbijanja ili otkazivanja; null dok rezervacija nije otkazana ili ako razlog nije naveden.
     public string? CancellationReason { get; set; }
@@ -37,5 +40,9 @@ public class ReservationResponse
     public List<string> AllowedActions { get; set; } = new();
 
     public List<ReservationEquipmentResponse>? Equipment { get; set; }
+
+    // Uplata (plaćena, vraćena ili još otvorena); null ako plaćanje nije ni započeto.
+    public ReservationPaymentResponse? Payment { get; set; }
+
     public List<ReservationStatusHistoryResponse>? StatusHistory { get; set; }
 }

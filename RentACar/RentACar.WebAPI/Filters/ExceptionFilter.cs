@@ -63,6 +63,13 @@ public class ExceptionFilter : ExceptionFilterAttribute
                 _logger.LogInformation("{Message} ({Method} {Path})", context.Exception.Message, request.Method, request.Path);
                 break;
 
+            // Stripe nije dostupan ili je odbio zahtjev servera; promjena nije spremljena, pa se može pokušati ponovo.
+            case PaymentGatewayException gatewayException:
+                context.ModelState.AddModelError(ServerErrorKey, gatewayException.Message);
+                status = StatusCodes.Status503ServiceUnavailable;
+                _logger.LogError(context.Exception, "Payment gateway failed on {Method} {Path}.", request.Method, request.Path);
+                break;
+
             case UnauthorizedAccessException:
                 context.ModelState.AddModelError(ClientErrorKey, "Niste prijavljeni.");
                 status = StatusCodes.Status401Unauthorized;
