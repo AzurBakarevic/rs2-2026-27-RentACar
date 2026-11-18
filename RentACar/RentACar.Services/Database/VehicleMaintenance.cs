@@ -1,6 +1,6 @@
 namespace RentACar.Services.Database;
 
-public class VehicleMaintenance
+public class VehicleMaintenance : IEntity
 {
     public int Id { get; set; }
     public DateTime StartAt { get; set; }
