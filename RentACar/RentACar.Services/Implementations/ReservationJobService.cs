@@ -18,12 +18,15 @@ public class ReservationJobService : IReservationJobService
 
     private readonly RentACarDbContext _dbContext;
     private readonly BaseReservationState _reservationState;
+    private readonly PendingEmails _pendingEmails;
     private readonly ILogger<ReservationJobService> _logger;
 
-    public ReservationJobService(RentACarDbContext dbContext, BaseReservationState reservationState, ILogger<ReservationJobService> logger)
+    public ReservationJobService(RentACarDbContext dbContext, BaseReservationState reservationState, PendingEmails pendingEmails,
+        ILogger<ReservationJobService> logger)
     {
         _dbContext = dbContext;
         _reservationState = reservationState;
+        _pendingEmails = pendingEmails;
         _logger = logger;
     }
 
@@ -65,6 +68,8 @@ public class ReservationJobService : IReservationJobService
             }
             finally
             {
+                // E-mail rezervacije koja nije otkazana ne smije otići sa sljedećom.
+                _pendingEmails.Clear();
                 _dbContext.ChangeTracker.Clear();
             }
         }
@@ -149,6 +154,8 @@ public class ReservationJobService : IReservationJobService
 
         await _dbContext.SaveChangesAsync();
         await transaction.CommitAsync();
+
+        await _pendingEmails.PublishAsync();
 
         if (expired)
         {
