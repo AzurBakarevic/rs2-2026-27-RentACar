@@ -1,0 +1,7 @@
+# Tajne i lokalni build ne idu u Docker image; konfiguraciju kontejneri dobijaju iz docker-compose.yml (.env).
+.env
+.env-tajne.zip
+**/bin/
+**/obj/
+**/.vs/
+**/*.user
