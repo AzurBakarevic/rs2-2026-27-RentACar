@@ -33,6 +33,7 @@ builder.Services.AddRentACarOpenApi();
 builder.Services.AddRentACarDatabase(builder.Configuration);
 builder.Services.AddRentACarAuthentication(builder.Configuration);
 builder.Services.AddRentACarStripe(builder.Configuration);
+builder.Services.AddRentACarMessaging(builder.Configuration);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
