@@ -16,10 +16,7 @@ public class UserDetailsValidator : AbstractValidator<IUserDetails>
             .NotEmpty().WithMessage("Prezime je obavezno.")
             .MaximumLength(50).WithMessage("Prezime može imati najviše 50 znakova.");
 
-        RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("E-mail je obavezan.")
-            .EmailAddress().WithMessage("E-mail nije ispravnog formata.")
-            .MaximumLength(100).WithMessage("E-mail može imati najviše 100 znakova.");
+        RuleFor(x => x.Email).ValidEmail();
 
         // Npr. +387 61 123 456 ili 061/123-456 (upute 4: format telefona).
         RuleFor(x => x.PhoneNumber)

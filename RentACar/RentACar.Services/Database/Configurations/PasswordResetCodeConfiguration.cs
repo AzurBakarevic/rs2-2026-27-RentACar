@@ -8,6 +8,7 @@ public class PasswordResetCodeConfiguration : IEntityTypeConfiguration<PasswordR
     public void Configure(EntityTypeBuilder<PasswordResetCode> builder)
     {
         builder.Property(x => x.CodeHash).IsRequired().HasMaxLength(200);
+        builder.Property(x => x.CodeSalt).IsRequired().HasMaxLength(50);
 
         builder.HasIndex(x => x.UserId);
 

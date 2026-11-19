@@ -18,4 +18,8 @@ public interface IUserService : IBaseCRUDService<UserResponse, UserSearchObject,
     Task<UserResponse> GetProfileAsync();
     Task<UserResponse> UpdateProfileAsync(UserProfileUpdateRequest request);
     Task ChangePasswordAsync(UserPasswordChangeRequest request);
+
+    // Reset zaboravljene lozinke kodom poslanim na e-mail (prijava).
+    Task RequestPasswordResetAsync(PasswordForgotRequest request);
+    Task ResetPasswordAsync(PasswordResetRequest request);
 }

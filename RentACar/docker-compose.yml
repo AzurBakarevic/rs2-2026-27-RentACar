@@ -21,8 +21,71 @@ services:
     networks:
       - rentacar
 
+  # Posrednik između API-ja i Worker-a (upute 3.2). Korisnik i lozinka su iz .env-a; upravljački pregled
+  # (redovi i poruke) je na http://localhost:${RABBITMQ_MANAGEMENT_HOST_PORT}.
+  rentacar-rabbitmq:
+    image: rabbitmq:4.3.8-management
+    container_name: rentacar-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RabbitMQ__Username}
+      RABBITMQ_DEFAULT_PASS: ${RabbitMQ__Password}
+    ports:
+      - "${RABBITMQ_HOST_PORT}:5672"
+      - "${RABBITMQ_MANAGEMENT_HOST_PORT}:15672"
+    volumes:
+      - rentacar-rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - rentacar
+
+  # Glavni servis (REST API). Konfiguracija je iz .env-a; ovdje se mijenja samo ono što je u kontejneru
+  # drugačije nego pri lokalnom pokretanju: baza i RabbitMQ se nalaze po nazivu servisa, a ne preko localhost-a.
+  rentacar-api:
+    build:
+      context: .
+      dockerfile: RentACar.WebAPI/Dockerfile
+    container_name: rentacar-api
+    env_file: .env
+    environment:
+      ConnectionStrings__RentACar: "Server=rentacar-sql,1433;Database=${SQL_DATABASE};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
+      RabbitMQ__Host: rentacar-rabbitmq
+      RabbitMQ__Port: "5672"
+    ports:
+      - "${API_HOST_PORT}:8080"
+    depends_on:
+      rentacar-sql:
+        condition: service_healthy
+      rentacar-rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - rentacar
+
+  # Pomoćni servis: čita poruke s RabbitMQ-a i šalje e-mailove (upute 3.2).
+  rentacar-worker:
+    build:
+      context: .
+      dockerfile: RentACar.Worker/Dockerfile
+    container_name: rentacar-worker
+    env_file: .env
+    environment:
+      RabbitMQ__Host: rentacar-rabbitmq
+      RabbitMQ__Port: "5672"
+    depends_on:
+      rentacar-rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - rentacar
+
 volumes:
   rentacar-sql-data:
+  rentacar-rabbitmq-data:
 
 networks:
   rentacar:

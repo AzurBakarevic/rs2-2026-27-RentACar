@@ -7,6 +7,7 @@ using RentACar.Model.Requests;
 using RentACar.Model.Responses;
 using RentACar.Services.Database;
 using RentACar.Services.Helpers;
+using RentACar.Services.Implementations;
 using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.ReservationStateMachine;
@@ -66,6 +67,7 @@ public class BaseReservationState
     // Mijenja status i dodaje zapis u historiju (ko i kada, prijava) i notifikaciju za korisnika.
     // Sve se sprema zajedno, pa ne može ostati promjena statusa bez historije ili notifikacije.
     // Bez prijavljenog korisnika (pozadinski posao) ChangedByUserId ostaje null, što znači "sistem".
+    // Pri potvrdi i otkazivanju korisnik dobija i e-mail; on se šalje tek nakon commita (PendingEmails).
     protected async Task ChangeStatusAsync(Reservation reservation, ReservationStatus newStatus, string? reason,
         Func<Reservation, string, Notification> createNotification)
     {
@@ -86,7 +88,22 @@ public class BaseReservationState
 
         reservation.Status = newStatus;
 
-        DbContext.Notifications.Add(createNotification(reservation, vehicleName));
+        var notification = createNotification(reservation, vehicleName);
+        DbContext.Notifications.Add(notification);
+
+        if (EmailMessages.IsSentFor(newStatus))
+        {
+            var recipient = await DbContext.Users
+                .Where(x => x.Id == reservation.UserId && !x.IsDeleted)
+                .Select(x => new { x.Email, x.FirstName })
+                .FirstOrDefaultAsync();
+
+            if (recipient != null)
+            {
+                ServiceProvider.GetRequiredService<PendingEmails>()
+                    .Add(EmailMessages.ReservationStatusChanged(recipient.Email, recipient.FirstName, notification));
+            }
+        }
     }
 
     // Korisnik otkazuje svoju rezervaciju (na čekanju ili potvrđenu) najkasnije 24 sata prije preuzimanja (prijava).

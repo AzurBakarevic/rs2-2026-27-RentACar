@@ -7,7 +7,7 @@ using RentACar.WebAPI.Services.AccessManager;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Prijava, registracija i odjava. [AllowAnonymous] je samo na prijavi i registraciji (upute 5).
+// Prijava, registracija, odjava i reset lozinke.
 [Authorize]
 [ApiController]
 [Route("[controller]")]
@@ -38,6 +38,26 @@ public class AccessController : ControllerBase
     {
         var result = await _userService.RegisterAsync(request);
         return StatusCode(StatusCodes.Status201Created, result);
+    }
+
+    // Šalje kod za reset lozinke na e-mail (preko RabbitMQ-a i Worker-a). Uvijek 204, i kad nalog ne postoji.
+    [AllowAnonymous]
+    [HttpPost("ForgotPassword")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ForgotPassword([FromBody] PasswordForgotRequest request)
+    {
+        await _userService.RequestPasswordResetAsync(request);
+        return NoContent();
+    }
+
+    // Nova lozinka uz kod iz e-maila; nakon toga se korisnik prijavljuje novom lozinkom.
+    [AllowAnonymous]
+    [HttpPost("ResetPassword")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ResetPassword([FromBody] PasswordResetRequest request)
+    {
+        await _userService.ResetPasswordAsync(request);
+        return NoContent();
     }
 
     // Poništava sve tokene prijavljenog korisnika na serveru (upute 5).

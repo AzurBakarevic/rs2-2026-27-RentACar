@@ -22,6 +22,7 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
     private readonly IValidator<ReservationInsertRequest> _insertValidator;
     private readonly IValidator<ReservationRejectRequest> _rejectValidator;
     private readonly IValidator<ReservationCancelRequest> _cancelValidator;
+    private readonly PendingEmails _pendingEmails;
 
     public ReservationService(
         IMapper mapper,
@@ -31,8 +32,10 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
         IAuthenticatedUserAccessor authenticatedUser,
         IValidator<ReservationInsertRequest> insertValidator,
         IValidator<ReservationRejectRequest> rejectValidator,
-        IValidator<ReservationCancelRequest> cancelValidator) : base(mapper, dbContext)
+        IValidator<ReservationCancelRequest> cancelValidator,
+        PendingEmails pendingEmails) : base(mapper, dbContext)
     {
+        _pendingEmails = pendingEmails;
         _reservationState = reservationState;
         _calculator = calculator;
         _authenticatedUser = authenticatedUser;
@@ -218,6 +221,9 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
 
         await _dbContext.SaveChangesAsync();
         await transaction.CommitAsync();
+
+        // E-mail o potvrdi ili otkazivanju ide tek kad je promjena spremljena.
+        await _pendingEmails.PublishAsync();
 
         return await GetByIdAsync(id);
     }

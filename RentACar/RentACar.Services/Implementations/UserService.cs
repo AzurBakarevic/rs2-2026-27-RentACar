@@ -8,6 +8,7 @@ using RentACar.Model.Requests;
 using RentACar.Model.Responses;
 using RentACar.Model.SearchObjects;
 using RentACar.Services.Database;
+using RentACar.Services.Helpers;
 using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.Implementations;
@@ -25,6 +26,9 @@ public class UserService
     private readonly IValidator<UserRegisterRequest> _registerValidator;
     private readonly IValidator<UserProfileUpdateRequest> _profileValidator;
     private readonly IValidator<UserPasswordChangeRequest> _passwordChangeValidator;
+    private readonly IValidator<PasswordForgotRequest> _passwordForgotValidator;
+    private readonly IValidator<PasswordResetRequest> _passwordResetValidator;
+    private readonly PendingEmails _pendingEmails;
 
     public UserService(
         RentACarDbContext dbContext,
@@ -35,14 +39,20 @@ public class UserService
         IValidator<UserRegisterRequest> registerValidator,
         IValidator<UserProfileUpdateRequest> profileValidator,
         IValidator<UserPasswordChangeRequest> passwordChangeValidator,
+        IValidator<PasswordForgotRequest> passwordForgotValidator,
+        IValidator<PasswordResetRequest> passwordResetValidator,
         ICryptoService cryptoService,
         IAuthenticatedUserAccessor authenticatedUser,
-        IMemoryCache cache) : base(dbContext, mapper, insertValidator, updateValidator)
+        IMemoryCache cache,
+        PendingEmails pendingEmails) : base(dbContext, mapper, insertValidator, updateValidator)
     {
         _loginValidator = loginValidator;
         _registerValidator = registerValidator;
         _profileValidator = profileValidator;
         _passwordChangeValidator = passwordChangeValidator;
+        _passwordForgotValidator = passwordForgotValidator;
+        _passwordResetValidator = passwordResetValidator;
+        _pendingEmails = pendingEmails;
         _cryptoService = cryptoService;
         _authenticatedUser = authenticatedUser;
         _cache = cache;
@@ -278,7 +288,129 @@ public class UserService
         RemoveTokenVersionFromCache(entity.Id);
     }
 
+    // ---------- Reset zaboravljene lozinke (prijava) ----------
+
+    // Šalje kod na e-mail. Odgovor je uvijek isti, bez obzira postoji li nalog s tom adresom,
+    // da se preko ovog endpointa ne može saznati ko je registrovan.
+    public async Task RequestPasswordResetAsync(PasswordForgotRequest request)
+    {
+        await _passwordForgotValidator.ValidateAndThrowAsync(request);
+
+        // Kod i hash se prave i kad nalog ne postoji: hashiranje traje, pa bi brži odgovor otkrio nepostojeći e-mail.
+        var code = PasswordResetRules.GenerateCode();
+        var salt = _cryptoService.GenerateSalt();
+        var hash = _cryptoService.GenerateHash(code, salt);
+
+        var userId = await FindActiveUserIdByEmailAsync(request.Email);
+        if (userId == null)
+        {
+            return;
+        }
+
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        await LockUserAsync(userId.Value);
+
+        // Vrijeme tek nakon zaključavanja: zahtjev koji je čekao vidi promjene prethodnog.
+        var now = DateTime.UtcNow;
+
+        var lastCodeCreatedAt = await _dbContext.PasswordResetCodes
+            .Where(x => x.UserId == userId)
+            .MaxAsync(x => (DateTime?)x.CreatedAt);
+
+        if (lastCodeCreatedAt > now.AddSeconds(-PasswordResetRules.ResendCooldownSeconds))
+        {
+            return;
+        }
+
+        // Važi samo najnoviji kod.
+        await _dbContext.PasswordResetCodes
+            .Where(x => x.UserId == userId && x.UsedAt == null && x.ExpiresAt > now)
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.ExpiresAt, now));
+
+        _dbContext.PasswordResetCodes.Add(new PasswordResetCode
+        {
+            UserId = userId.Value,
+            CodeHash = hash,
+            CodeSalt = salt,
+            CreatedAt = now,
+            ExpiresAt = now.AddMinutes(PasswordResetRules.CodeValidMinutes)
+        });
+
+        var recipient = await GetQuery()
+            .Where(x => x.Id == userId)
+            .Select(x => new { x.Email, x.FirstName })
+            .FirstAsync();
+
+        await _dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        _pendingEmails.Add(EmailMessages.PasswordResetCode(recipient.Email, recipient.FirstName, code));
+        await _pendingEmails.PublishAsync();
+    }
+
+    // Postavlja novu lozinku uz kod iz e-maila. Ista poruka za nepostojeći e-mail, pogrešan, istekao i iskorišten kod.
+    public async Task ResetPasswordAsync(PasswordResetRequest request)
+    {
+        await _passwordResetValidator.ValidateAndThrowAsync(request);
+
+        var userId = await FindActiveUserIdByEmailAsync(request.Email)
+            ?? throw new ClientException(PasswordResetRules.InvalidCodeMessage);
+
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        await LockUserAsync(userId);
+
+        var now = DateTime.UtcNow;
+
+        // Kod važi dok nije iskorišten, nije istekao i ima manje od 5 pogrešnih unosa, pa se ne može pogoditi isprobavanjem.
+        var resetCode = await _dbContext.PasswordResetCodes
+            .Where(x => x.UserId == userId
+                        && x.UsedAt == null
+                        && x.ExpiresAt > now
+                        && x.FailedAttempts < PasswordResetRules.MaxFailedAttempts)
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync()
+            ?? throw new ClientException(PasswordResetRules.InvalidCodeMessage);
+
+        if (!_cryptoService.Verify(resetCode.CodeHash, resetCode.CodeSalt, request.Code))
+        {
+            resetCode.FailedAttempts++;
+            await _dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            throw new ClientException(PasswordResetRules.InvalidCodeMessage);
+        }
+
+        var user = await GetQuery().FirstAsync(x => x.Id == userId);
+
+        resetCode.UsedAt = now;
+        SetPassword(user, request.NewPassword);
+
+        // Kao pri promjeni lozinke: sve postojeće prijave prestaju važiti.
+        user.TokenVersion++;
+
+        await _dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        RemoveTokenVersionFromCache(userId);
+    }
+
     // ---------- Pomoćne metode ----------
+
+    // Deaktiviran i obrisan nalog ne može resetovati lozinku (prijava mu ionako nije dozvoljena).
+    private Task<int?> FindActiveUserIdByEmailAsync(string email)
+    {
+        var trimmed = email.Trim();
+
+        return GetQuery()
+            .Where(x => x.Email == trimmed && x.IsActive)
+            .Select(x => (int?)x.Id)
+            .FirstOrDefaultAsync();
+    }
+
+    // Zahtjevi za reset istog naloga idu jedan za drugim (UPDLOCK do kraja transakcije), pa se ni rok za novi kod
+    // ni broj pogrešnih pokušaja ne mogu zaobići istovremenim zahtjevima.
+    private Task LockUserAsync(int userId)
+        => _dbContext.Database.ExecuteSqlAsync($"SELECT Id FROM Users WITH (UPDLOCK, ROWLOCK) WHERE Id = {userId}");
 
     private int GetCurrentUserId()
     {

@@ -33,6 +33,7 @@ builder.Services.AddRentACarOpenApi();
 builder.Services.AddRentACarDatabase(builder.Configuration);
 builder.Services.AddRentACarAuthentication(builder.Configuration);
 builder.Services.AddRentACarStripe(builder.Configuration);
+builder.Services.AddRentACarMessaging(builder.Configuration);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
@@ -90,6 +91,8 @@ builder.Services.AddScoped<IValidator<UserLoginRequest>, UserLoginValidator>();
 builder.Services.AddScoped<IValidator<UserRegisterRequest>, UserRegisterValidator>();
 builder.Services.AddScoped<IValidator<UserProfileUpdateRequest>, UserProfileUpdateValidator>();
 builder.Services.AddScoped<IValidator<UserPasswordChangeRequest>, UserPasswordChangeValidator>();
+builder.Services.AddScoped<IValidator<PasswordForgotRequest>, PasswordForgotValidator>();
+builder.Services.AddScoped<IValidator<PasswordResetRequest>, PasswordResetValidator>();
 builder.Services.AddScoped<IValidator<VehicleInsertRequest>, VehicleInsertValidator>();
 builder.Services.AddScoped<IValidator<VehicleUpdateRequest>, VehicleUpdateValidator>();
 builder.Services.AddScoped<IValidator<ImageUploadRequest>, ImageUploadValidator>();
