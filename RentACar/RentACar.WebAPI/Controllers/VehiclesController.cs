@@ -5,6 +5,7 @@ using RentACar.Model.Requests;
 using RentACar.Model.Responses;
 using RentACar.Model.SearchObjects;
 using RentACar.Services.Interfaces;
+using RentACar.WebAPI.Extensions;
 
 namespace RentACar.WebAPI.Controllers;
 
@@ -12,9 +13,6 @@ namespace RentACar.WebAPI.Controllers;
 public class VehiclesController
     : BaseCRUDController<VehicleResponse, VehicleSearchObject, VehicleInsertRequest, VehicleUpdateRequest, IVehicleService>
 {
-    // Gornja granica veličine zahtjeva za upload; dozvoljenu veličinu slike (2 MB) provjerava validator, s jasnom porukom.
-    private const long MaxImageRequestBytes = 10 * 1024 * 1024;
-
     public VehiclesController(IVehicleService vehicleService) : base(vehicleService)
     {
     }
@@ -45,23 +43,14 @@ public class VehiclesController
     [Authorize(Roles = RoleNames.Administrator)]
     [HttpPut("{id:int}/Image")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(MaxImageRequestBytes)]
-    [RequestFormLimits(MultipartBodyLengthLimit = MaxImageRequestBytes)]
+    [RequestSizeLimit(FormFileExtensions.MaxImageRequestBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = FormFileExtensions.MaxImageRequestBytes)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateImage(int id, IFormFile? image)
     {
-        var request = new ImageUploadRequest { ContentType = image?.ContentType };
-
-        if (image != null)
-        {
-            using var stream = new MemoryStream();
-            await image.CopyToAsync(stream);
-            request.Content = stream.ToArray();
-        }
-
-        await _service.SetImageAsync(id, request);
+        await _service.SetImageAsync(id, await image.ToImageUploadRequestAsync());
         return NoContent();
     }
 }

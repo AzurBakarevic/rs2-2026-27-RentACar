@@ -20,6 +20,10 @@ public class MappingConfig : IRegister
                 src => src.Reservations.Where(r => r.Review != null).Average(r => (double?)r.Review!.Rating))
             .Map(dest => dest.ReviewCount, src => src.Reservations.Count(r => r.Review != null));
 
+        // Kao kod vozila: iz baze se čita samo da li slika profila postoji.
+        config.NewConfig<User, UserResponse>()
+            .Map(dest => dest.HasProfileImage, src => src.ProfileImage != null);
+
         config.NewConfig<VehicleMaintenance, VehicleMaintenanceResponse>()
             .Map(dest => dest.VehicleName, src => src.Vehicle.VehicleModel.Brand.Name + " " + src.Vehicle.VehicleModel.Name);
 
