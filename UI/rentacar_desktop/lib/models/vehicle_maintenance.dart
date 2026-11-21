@@ -1,0 +1,33 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'vehicle_maintenance.g.dart';
+
+/// Servis vozila; vremena dolaze u UTC-u, a prikazuju se po lokalnom vremenu.
+@JsonSerializable()
+class VehicleMaintenance {
+  final int id;
+  final DateTime startAt;
+  final DateTime endAt;
+  final String description;
+  final double cost;
+  final int vehicleId;
+
+  /// Marka i model, npr. „Volkswagen Golf”.
+  final String vehicleName;
+  final String vehicleRegistrationNumber;
+
+  VehicleMaintenance({
+    required this.id,
+    required this.startAt,
+    required this.endAt,
+    required this.description,
+    required this.cost,
+    required this.vehicleId,
+    required this.vehicleName,
+    required this.vehicleRegistrationNumber,
+  });
+
+  factory VehicleMaintenance.fromJson(Map<String, dynamic> json) => _$VehicleMaintenanceFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VehicleMaintenanceToJson(this);
+}
