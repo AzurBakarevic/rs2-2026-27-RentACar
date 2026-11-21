@@ -63,6 +63,7 @@ builder.Services.AddScoped<ReservationCalculator>();
 builder.Services.AddScoped<ReservationPaymentHandler>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IReservationJobService, ReservationJobService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 
 // Istek roka za plaćanje (15 min) i podsjetnik dan prije preuzimanja, svake minute.
 builder.Services.AddHostedService<ReservationJobsBackgroundService>();
@@ -105,6 +106,7 @@ builder.Services.AddScoped<IValidator<SeasonalPriceUpdateRequest>, SeasonalPrice
 builder.Services.AddScoped<IValidator<ReservationInsertRequest>, ReservationInsertValidator>();
 builder.Services.AddScoped<IValidator<ReservationRejectRequest>, ReservationRejectValidator>();
 builder.Services.AddScoped<IValidator<ReservationCancelRequest>, ReservationCancelValidator>();
+builder.Services.AddScoped<IValidator<ReviewInsertRequest>, ReviewInsertValidator>();
 
 var app = builder.Build();
 

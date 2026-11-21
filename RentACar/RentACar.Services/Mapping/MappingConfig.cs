@@ -34,6 +34,7 @@ public class MappingConfig : IRegister
             .Map(dest => dest.VehicleName, src => src.Vehicle.VehicleModel.Brand.Name + " " + src.Vehicle.VehicleModel.Name)
             .Map(dest => dest.VehicleHasImage, src => src.Vehicle.Image != null)
             .Map(dest => dest.IsPaid, src => src.Payments.Any(p => p.Status == PaymentStatus.Paid))
+            .Map(dest => dest.HasReview, src => src.Review != null)
             .Map(dest => dest.CancellationReason,
                 src => src.StatusHistory.Where(h => h.NewStatus == ReservationStatus.Cancelled).Select(h => h.Reason).FirstOrDefault())
             .Ignore(dest => dest.AllowedActions)
@@ -41,6 +42,15 @@ public class MappingConfig : IRegister
             .Ignore(dest => dest.Payment!)
             .Ignore(dest => dest.Equipment!)
             .Ignore(dest => dest.StatusHistory!);
+
+        // Korisnik i vozilo recenzije su korisnik i vozilo rezervacije za koju je ostavljena.
+        config.NewConfig<Review, ReviewResponse>()
+            .Map(dest => dest.UserId, src => src.Reservation.UserId)
+            .Map(dest => dest.UserFullName, src => src.Reservation.User.FirstName + " " + src.Reservation.User.LastName)
+            .Map(dest => dest.VehicleId, src => src.Reservation.VehicleId)
+            .Map(dest => dest.VehicleName,
+                src => src.Reservation.Vehicle.VehicleModel.Brand.Name + " " + src.Reservation.Vehicle.VehicleModel.Name)
+            .Map(dest => dest.VehicleRegistrationNumber, src => src.Reservation.Vehicle.RegistrationNumber);
 
         config.NewConfig<ReservationEquipment, ReservationEquipmentResponse>()
             .Map(dest => dest.TotalPrice, src => src.Quantity * src.PricePerDay * src.Reservation.RentalDays);
