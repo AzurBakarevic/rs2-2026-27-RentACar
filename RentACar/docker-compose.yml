@@ -43,8 +43,8 @@ services:
     networks:
       - rentacar
 
-  # Glavni servis (REST API). Konfiguracija je iz .env-a; ovdje se mijenja samo ono što je u kontejneru
-  # drugačije nego pri lokalnom pokretanju: baza i RabbitMQ se nalaze po nazivu servisa, a ne preko localhost-a.
+  # Glavni servis (REST API). Konfiguracija je iz .env-a; ovdje se samo biraju vrijednosti s prefiksom DOCKER_
+  # (također iz .env-a), jer se u kontejneru baza i RabbitMQ nalaze po nazivu servisa, a ne preko localhost-a.
   rentacar-api:
     build:
       context: .
@@ -52,9 +52,9 @@ services:
     container_name: rentacar-api
     env_file: .env
     environment:
-      ConnectionStrings__RentACar: "Server=rentacar-sql,1433;Database=${SQL_DATABASE};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
-      RabbitMQ__Host: rentacar-rabbitmq
-      RabbitMQ__Port: "5672"
+      ConnectionStrings__RentACar: ${DOCKER_ConnectionStrings__RentACar}
+      RabbitMQ__Host: ${DOCKER_RabbitMQ__Host}
+      RabbitMQ__Port: ${DOCKER_RabbitMQ__Port}
     ports:
       - "${API_HOST_PORT}:8080"
     depends_on:
@@ -74,8 +74,8 @@ services:
     container_name: rentacar-worker
     env_file: .env
     environment:
-      RabbitMQ__Host: rentacar-rabbitmq
-      RabbitMQ__Port: "5672"
+      RabbitMQ__Host: ${DOCKER_RabbitMQ__Host}
+      RabbitMQ__Port: ${DOCKER_RabbitMQ__Port}
     depends_on:
       rentacar-rabbitmq:
         condition: service_healthy

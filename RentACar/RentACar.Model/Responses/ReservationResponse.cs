@@ -26,6 +26,9 @@ public class ReservationResponse
     // Razlog odbijanja ili otkazivanja; null dok rezervacija nije otkazana ili ako razlog nije naveden.
     public string? CancellationReason { get; set; }
 
+    // Za jednu rezervaciju moguća je samo jedna recenzija (prijava).
+    public bool HasReview { get; set; }
+
     public int UserId { get; set; }
     public string UserFullName { get; set; } = string.Empty;
 

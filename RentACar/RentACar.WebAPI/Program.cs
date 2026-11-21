@@ -1,6 +1,7 @@
 using DotNetEnv;
 using FluentValidation;
 using Mapster;
+using QuestPDF.Infrastructure;
 using RentACar.Model.Requests;
 using RentACar.Services.Implementations;
 using RentACar.Services.Interfaces;
@@ -63,6 +64,12 @@ builder.Services.AddScoped<ReservationCalculator>();
 builder.Services.AddScoped<ReservationPaymentHandler>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IReservationJobService, ReservationJobService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+
+// PDF izvještaji (QuestPDF): besplatna Community licenca (pojedinci, open-source projekti i firme s prihodom do 1 mil. USD).
+QuestPDF.Settings.License = LicenseType.Community;
 
 // Istek roka za plaćanje (15 min) i podsjetnik dan prije preuzimanja, svake minute.
 builder.Services.AddHostedService<ReservationJobsBackgroundService>();
@@ -105,6 +112,8 @@ builder.Services.AddScoped<IValidator<SeasonalPriceUpdateRequest>, SeasonalPrice
 builder.Services.AddScoped<IValidator<ReservationInsertRequest>, ReservationInsertValidator>();
 builder.Services.AddScoped<IValidator<ReservationRejectRequest>, ReservationRejectValidator>();
 builder.Services.AddScoped<IValidator<ReservationCancelRequest>, ReservationCancelValidator>();
+builder.Services.AddScoped<IValidator<ReviewInsertRequest>, ReviewInsertValidator>();
+builder.Services.AddScoped<IValidator<ReportPeriodRequest>, ReportPeriodValidator>();
 
 var app = builder.Build();
 

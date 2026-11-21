@@ -1,6 +1,6 @@
 namespace RentACar.Services.Database;
 
-public class Review
+public class Review : IEntity
 {
     public int Id { get; set; }
     public int Rating { get; set; }

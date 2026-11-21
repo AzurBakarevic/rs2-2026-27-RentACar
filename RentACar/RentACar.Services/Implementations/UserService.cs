@@ -28,6 +28,7 @@ public class UserService
     private readonly IValidator<UserPasswordChangeRequest> _passwordChangeValidator;
     private readonly IValidator<PasswordForgotRequest> _passwordForgotValidator;
     private readonly IValidator<PasswordResetRequest> _passwordResetValidator;
+    private readonly IValidator<ImageUploadRequest> _imageValidator;
     private readonly PendingEmails _pendingEmails;
 
     public UserService(
@@ -41,6 +42,7 @@ public class UserService
         IValidator<UserPasswordChangeRequest> passwordChangeValidator,
         IValidator<PasswordForgotRequest> passwordForgotValidator,
         IValidator<PasswordResetRequest> passwordResetValidator,
+        IValidator<ImageUploadRequest> imageValidator,
         ICryptoService cryptoService,
         IAuthenticatedUserAccessor authenticatedUser,
         IMemoryCache cache,
@@ -52,6 +54,7 @@ public class UserService
         _passwordChangeValidator = passwordChangeValidator;
         _passwordForgotValidator = passwordForgotValidator;
         _passwordResetValidator = passwordResetValidator;
+        _imageValidator = imageValidator;
         _pendingEmails = pendingEmails;
         _cryptoService = cryptoService;
         _authenticatedUser = authenticatedUser;
@@ -174,6 +177,37 @@ public class UserService
         RemoveTokenVersionFromCache(id);
     }
 
+    // ---------- Slika profila ----------
+
+    // Čita se samo kolona sa slikom (kao kod vozila).
+    public async Task<ImageResponse> GetImageAsync(int id)
+    {
+        var image = await GetQuery()
+            .AsNoTracking()
+            .Where(x => x.Id == id)
+            .Select(x => x.ProfileImage)
+            .FirstOrDefaultAsync();
+
+        if (image == null || image.Length == 0)
+        {
+            throw new KeyNotFoundException($"Profile image for user with id {id} not found.");
+        }
+
+        return new ImageResponse
+        {
+            Content = image,
+            ContentType = ImageFormat.DetectContentType(image) ?? "application/octet-stream"
+        };
+    }
+
+    public async Task SetImageAsync(int id, ImageUploadRequest request)
+    {
+        await _imageValidator.ValidateAndThrowAsync(request);
+        await UpdateImageAsync(id, request.Content);
+    }
+
+    public Task DeleteImageAsync(int id) => UpdateImageAsync(id, null);
+
     // ---------- Prijava, registracija, odjava ----------
 
     public async Task<AuthenticatedUser> AuthenticateAsync(UserLoginRequest request)
@@ -288,6 +322,12 @@ public class UserService
         RemoveTokenVersionFromCache(entity.Id);
     }
 
+    public Task<ImageResponse> GetProfileImageAsync() => GetImageAsync(GetCurrentUserId());
+
+    public Task SetProfileImageAsync(ImageUploadRequest request) => SetImageAsync(GetCurrentUserId(), request);
+
+    public Task DeleteProfileImageAsync() => DeleteImageAsync(GetCurrentUserId());
+
     // ---------- Reset zaboravljene lozinke (prijava) ----------
 
     // Šalje kod na e-mail. Odgovor je uvijek isti, bez obzira postoji li nalog s tom adresom,
@@ -395,6 +435,19 @@ public class UserService
     }
 
     // ---------- Pomoćne metode ----------
+
+    // Jedan UPDATE, bez učitavanja stare slike u memoriju; null uklanja sliku.
+    private async Task UpdateImageAsync(int id, byte[]? image)
+    {
+        var updated = await GetQuery()
+            .Where(x => x.Id == id)
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.ProfileImage, image));
+
+        if (updated == 0)
+        {
+            throw new KeyNotFoundException($"User with id {id} not found.");
+        }
+    }
 
     // Deaktiviran i obrisan nalog ne može resetovati lozinku (prijava mu ionako nije dozvoljena).
     private Task<int?> FindActiveUserIdByEmailAsync(string email)
