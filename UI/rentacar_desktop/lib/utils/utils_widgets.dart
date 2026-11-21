@@ -66,3 +66,11 @@ String? Function(String?) requiredText(String message, {int? maxLength, String? 
     return null;
   };
 }
+
+/// Dekoracija polja bez okvira (prekidač „Aktivno” u formi), jer tema svim poljima daje okvir.
+const InputDecoration plainFieldDecoration = InputDecoration(
+  border: InputBorder.none,
+  enabledBorder: InputBorder.none,
+  focusedBorder: InputBorder.none,
+  contentPadding: EdgeInsets.zero,
+);

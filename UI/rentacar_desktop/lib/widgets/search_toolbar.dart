@@ -9,6 +9,7 @@ class SearchToolbar extends StatelessWidget {
     required this.onChanged,
     required this.newLabel,
     required this.onNew,
+    this.filters = const [],
   });
 
   final TextEditingController controller;
@@ -17,11 +18,15 @@ class SearchToolbar extends StatelessWidget {
   final String newLabel;
   final VoidCallback onNew;
 
+  /// Dodatni filteri lijevo od pretrage (npr. datum kod servisa vozila).
+  final List<Widget> filters;
+
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
+        for (final filter in filters) ...[filter, const SizedBox(width: 16)],
         Flexible(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 460),
