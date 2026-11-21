@@ -64,6 +64,7 @@ builder.Services.AddScoped<ReservationPaymentHandler>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IReservationJobService, ReservationJobService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // Istek roka za plaćanje (15 min) i podsjetnik dan prije preuzimanja, svake minute.
 builder.Services.AddHostedService<ReservationJobsBackgroundService>();
