@@ -4,9 +4,14 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/brand_provider.dart';
 import 'providers/category_provider.dart';
+import 'providers/dashboard_provider.dart';
+import 'providers/equipment_provider.dart';
 import 'providers/fuel_type_provider.dart';
+import 'providers/seasonal_price_provider.dart';
 import 'providers/transmission_type_provider.dart';
+import 'providers/vehicle_maintenance_provider.dart';
 import 'providers/vehicle_model_provider.dart';
+import 'providers/vehicle_provider.dart';
 import 'screens/login_screen.dart';
 import 'utils/app_theme.dart';
 
@@ -30,6 +35,11 @@ void main() {
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => FuelTypeProvider()),
         ChangeNotifierProvider(create: (_) => TransmissionTypeProvider()),
+        ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => VehicleProvider()),
+        ChangeNotifierProvider(create: (_) => EquipmentProvider()),
+        ChangeNotifierProvider(create: (_) => VehicleMaintenanceProvider()),
+        ChangeNotifierProvider(create: (_) => SeasonalPriceProvider()),
       ],
       child: const RentACarApp(),
     ),
@@ -46,6 +56,10 @@ class RentACarApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       theme: buildAppTheme(),
+      // Kalendar, birač vremena i ugrađeni tekstovi (npr. „Odustani”) na bosanskom.
+      locale: const Locale('bs'),
+      supportedLocales: const [Locale('bs')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       home: const LoginScreen(),
     );
   }

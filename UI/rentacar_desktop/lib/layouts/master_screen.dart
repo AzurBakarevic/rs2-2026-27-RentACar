@@ -2,8 +2,13 @@ import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
+import '../screens/dashboard_screen.dart';
+import '../screens/equipment_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/reference_data_screen.dart';
+import '../screens/seasonal_price_screen.dart';
+import '../screens/vehicle_list_screen.dart';
+import '../screens/vehicle_maintenance_screen.dart';
 import '../utils/app_theme.dart';
 import '../utils/utils_widgets.dart';
 
@@ -16,10 +21,15 @@ class _MenuEntry {
 
 // Stavke se dodaju redom kako ekrani budu gotovi (redoslijed kao na skicama).
 final List<_MenuEntry> _menuEntries = [
+  _MenuEntry(DashboardScreen.title, () => const DashboardScreen()),
+  _MenuEntry(VehicleListScreen.title, () => const VehicleListScreen()),
+  _MenuEntry(EquipmentScreen.title, () => const EquipmentScreen()),
+  _MenuEntry(VehicleMaintenanceScreen.title, () => const VehicleMaintenanceScreen()),
+  _MenuEntry(SeasonalPriceScreen.title, () => const SeasonalPriceScreen()),
   _MenuEntry(ReferenceDataScreen.title, () => const ReferenceDataScreen()),
 ];
 
-/// Početni ekran nakon prijave.
+/// Početni ekran nakon prijave (prijava: Dashboard).
 Widget buildHomeScreen() => _menuEntries.first.builder();
 
 /// Okvir svih ekrana: meni lijevo, naslov i prijavljeni korisnik gore.
