@@ -53,7 +53,8 @@ public class MappingConfig : IRegister
             .Map(dest => dest.HasProfileImage, src => src.ProfileImage != null);
 
         config.NewConfig<VehicleMaintenance, VehicleMaintenanceResponse>()
-            .Map(dest => dest.VehicleName, src => src.Vehicle.VehicleModel.Brand.Name + " " + src.Vehicle.VehicleModel.Name);
+            .Map(dest => dest.VehicleName, src => src.Vehicle.VehicleModel.Brand.Name + " " + src.Vehicle.VehicleModel.Name)
+            .Map(dest => dest.VehicleHasImage, src => src.Vehicle.Image != null);
 
         // Oprema, uplata i historija statusa se ne mapiraju ovdje: puni ih samo GetByIdAsync, posebnim upitima,
         // da lista rezervacija ne čita te tabele. AllowedActions računa state machine, a rok za plaćanje servis.
