@@ -32,6 +32,9 @@ public class ReservationResponse
     public int UserId { get; set; }
     public string UserFullName { get; set; } = string.Empty;
 
+    // false i za obrisanog korisnika, jer njegova slika više nije dostupna.
+    public bool UserHasImage { get; set; }
+
     public int VehicleId { get; set; }
 
     // Marka i model, npr. "Volkswagen Golf".
@@ -41,6 +44,9 @@ public class ReservationResponse
 
     // Akcije koje prijavljeni korisnik sada smije izvršiti (ReservationActions), da aplikacija zna koja dugmad prikazuje.
     public List<string> AllowedActions { get; set; } = new();
+
+    // Razlog po akciji koja u ovom statusu postoji, ali se trenutno ne može izvršiti (onemogućeno dugme, upute 6).
+    public Dictionary<string, string> ActionBlockedReasons { get; set; } = new();
 
     public List<ReservationEquipmentResponse>? Equipment { get; set; }
 

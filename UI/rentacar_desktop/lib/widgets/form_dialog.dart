@@ -12,6 +12,7 @@ import 'form_close_button.dart';
 ///
 /// [formKey] treba kad jedno polje provjerava drugo (npr. kraj servisa poslije početka).
 /// [focusField] dobija fokus poslije greške servera koja nije uz neko polje.
+/// Za potvrdu akcije se zadaju [confirmLabel] i, kad je nepovratna, [destructive].
 Future<bool> showFormDialog(
   BuildContext context, {
   required String title,
@@ -21,6 +22,8 @@ Future<bool> showFormDialog(
   required String focusField,
   GlobalKey<FormBuilderState>? formKey,
   double width = 440,
+  String confirmLabel = 'Sačuvaj',
+  bool destructive = false,
 }) async {
   final saved = await showDialog<bool>(
     context: context,
@@ -33,6 +36,8 @@ Future<bool> showFormDialog(
       focusField: focusField,
       formKey: formKey ?? GlobalKey<FormBuilderState>(),
       width: width,
+      confirmLabel: confirmLabel,
+      destructive: destructive,
     ),
   );
   return saved ?? false;
@@ -47,6 +52,8 @@ class _FormDialog extends StatefulWidget {
     required this.focusField,
     required this.formKey,
     required this.width,
+    required this.confirmLabel,
+    required this.destructive,
   });
 
   final String title;
@@ -56,6 +63,8 @@ class _FormDialog extends StatefulWidget {
   final String focusField;
   final GlobalKey<FormBuilderState> formKey;
   final double width;
+  final String confirmLabel;
+  final bool destructive;
 
   @override
   State<_FormDialog> createState() => _FormDialogState();
@@ -110,10 +119,11 @@ class _FormDialogState extends State<_FormDialog> {
           child: const Text('Odustani'),
         ),
         FilledButton(
+          style: widget.destructive ? FilledButton.styleFrom(backgroundColor: AppColors.error) : null,
           onPressed: _isSaving ? null : _save,
           child: _isSaving
               ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5))
-              : const Text('Sačuvaj'),
+              : Text(widget.confirmLabel),
         ),
       ],
     );

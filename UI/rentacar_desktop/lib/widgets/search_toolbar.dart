@@ -1,14 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Polje za pretragu i dugme za novi zapis, desno iznad tabele.
+/// Polje za pretragu i dugme za novi zapis, desno iznad tabele. Bez [newLabel] nema dugmeta (npr. rezervacije).
 class SearchToolbar extends StatelessWidget {
   const SearchToolbar({
     super.key,
     required this.controller,
     required this.hintText,
     required this.onChanged,
-    required this.newLabel,
-    required this.onNew,
+    this.newLabel,
+    this.onNew,
     this.newBlockedReason,
     this.filters = const [],
   });
@@ -16,8 +16,8 @@ class SearchToolbar extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final ValueChanged<String> onChanged;
-  final String newLabel;
-  final VoidCallback onNew;
+  final String? newLabel;
+  final VoidCallback? onNew;
 
   /// Kad je zadan, dugme za novi zapis je onemogućeno, a razlog se prikazuje kad se pređe mišem preko njega.
   final String? newBlockedReason;
@@ -46,11 +46,13 @@ class SearchToolbar extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 16),
-        if (newBlockedReason == null)
-          FilledButton(onPressed: onNew, child: Text(newLabel))
-        else
-          Tooltip(message: newBlockedReason, child: FilledButton(onPressed: null, child: Text(newLabel))),
+        if (newLabel case final label?) ...[
+          const SizedBox(width: 16),
+          if (newBlockedReason == null)
+            FilledButton(onPressed: onNew, child: Text(label))
+          else
+            Tooltip(message: newBlockedReason, child: FilledButton(onPressed: null, child: Text(label))),
+        ],
       ],
     );
   }

@@ -57,9 +57,10 @@ public class MappingConfig : IRegister
             .Map(dest => dest.VehicleHasImage, src => src.Vehicle.Image != null);
 
         // Oprema, uplata i historija statusa se ne mapiraju ovdje: puni ih samo GetByIdAsync, posebnim upitima,
-        // da lista rezervacija ne čita te tabele. AllowedActions računa state machine, a rok za plaćanje servis.
+        // da lista rezervacija ne čita te tabele. Akcije i njihove razloge računa state machine, a rok za plaćanje servis.
         config.NewConfig<Reservation, ReservationResponse>()
             .Map(dest => dest.UserFullName, src => src.User.FirstName + " " + src.User.LastName)
+            .Map(dest => dest.UserHasImage, src => !src.User.IsDeleted && src.User.ProfileImage != null)
             .Map(dest => dest.VehicleName, src => src.Vehicle.VehicleModel.Brand.Name + " " + src.Vehicle.VehicleModel.Name)
             .Map(dest => dest.VehicleHasImage, src => src.Vehicle.Image != null)
             .Map(dest => dest.IsPaid, src => src.Payments.Any(p => p.Status == PaymentStatus.Paid))
@@ -67,6 +68,7 @@ public class MappingConfig : IRegister
             .Map(dest => dest.CancellationReason,
                 src => src.StatusHistory.Where(h => h.NewStatus == ReservationStatus.Cancelled).Select(h => h.Reason).FirstOrDefault())
             .Ignore(dest => dest.AllowedActions)
+            .Ignore(dest => dest.ActionBlockedReasons)
             .Ignore(dest => dest.PaymentDeadline)
             .Ignore(dest => dest.Payment!)
             .Ignore(dest => dest.Equipment!)
