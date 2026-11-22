@@ -15,6 +15,10 @@ class AppColors {
   static const Color infoBackground = Color(0xFFECEBFA);
   static const Color success = Color(0xFF15803D);
   static const Color successBackground = Color(0xFFE6F6EC);
+  static const Color warning = Color(0xFF8A5B00);
+  static const Color warningBackground = Color(0xFFFDF1D0);
+  static const Color confirmed = Color(0xFF1C5FA8);
+  static const Color confirmedBackground = Color(0xFFE2EEFC);
 }
 
 ThemeData buildAppTheme() {

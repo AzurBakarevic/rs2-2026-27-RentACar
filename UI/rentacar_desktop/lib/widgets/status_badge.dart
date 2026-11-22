@@ -12,22 +12,42 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? AppColors.success : AppColors.error;
+    return StatusPill(
+      label: active ? activeLabel : inactiveLabel,
+      color: active ? AppColors.success : AppColors.error,
+      background: active ? AppColors.successBackground : AppColors.errorBackground,
+    );
+  }
+}
+
+/// Zaobljena oznaka s tačkom u zadanoj boji (aktivnost, status rezervacije).
+class StatusPill extends StatelessWidget {
+  const StatusPill({
+    super.key,
+    required this.label,
+    required this.color,
+    required this.background,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+    this.fontSize,
+  });
+
+  final String label;
+  final Color color;
+  final Color background;
+  final EdgeInsets padding;
+  final double? fontSize;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        color: active ? AppColors.successBackground : AppColors.errorBackground,
-        borderRadius: BorderRadius.circular(20),
-      ),
+      padding: padding,
+      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(20)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 8),
-          Text(
-            active ? activeLabel : inactiveLabel,
-            style: TextStyle(color: color, fontWeight: FontWeight.w600),
-          ),
+          Text(label, style: TextStyle(color: color, fontSize: fontSize, fontWeight: FontWeight.w600)),
         ],
       ),
     );
