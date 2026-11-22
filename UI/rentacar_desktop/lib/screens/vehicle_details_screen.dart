@@ -20,6 +20,9 @@ import '../utils/form_errors.dart';
 import '../utils/form_validators.dart';
 import '../utils/formatters.dart';
 import '../utils/utils_widgets.dart';
+import '../widgets/field_with_add_button.dart';
+import '../widgets/form_close_button.dart';
+import 'reference_data_dialog.dart';
 import 'vehicle_list_screen.dart';
 
 /// Dodavanje i izmjena vozila (prijava: marka, model, kategorija, gorivo i mjenjač iz padajućih lista,
@@ -54,8 +57,10 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
   List<DropdownMenuItem<int>> _categories = [];
   List<DropdownMenuItem<int>> _fuelTypes = [];
   List<DropdownMenuItem<int>> _transmissionTypes = [];
+  int? _brandId;
   int _modelsRequestId = 0;
   bool _isLoadingModels = false;
+  bool _modelsFailed = false;
 
   bool _isLoading = true;
   String? _loadError;
@@ -71,6 +76,7 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
   void initState() {
     super.initState();
     _vehicle = widget.vehicle;
+    _brandId = widget.vehicle?.brandId;
     _load();
   }
 
@@ -131,8 +137,13 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
     // Model prethodne marke više ne važi; vrijednost se briše prije nego što se promijeni lista.
     _formKey.currentState?.fields['vehicleModelId']?.didChange(null);
     setState(() {
+      if (_modelsFailed) {
+        _error = null;
+      }
+      _brandId = brandId;
       _models = [];
       _isLoadingModels = brandId != null;
+      _modelsFailed = false;
     });
     if (brandId == null) {
       return;
@@ -150,21 +161,97 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
     } on UnauthorizedException {
       // Aplikacija se već vraća na prijavu.
     } on ApiClientException catch (e) {
-      if (mounted && requestId == _modelsRequestId) {
-        setState(() {
-          _isLoadingModels = false;
-          _error = e.message;
-        });
-      }
+      _showModelsError(requestId, e.message);
+    } catch (e) {
+      debugPrint('Učitavanje modela nije uspjelo: $e');
+      _showModelsError(requestId, 'Odgovor servera nije moguće pročitati.');
     }
   }
+
+  void _showModelsError(int requestId, String message) {
+    if (mounted && requestId == _modelsRequestId) {
+      setState(() {
+        _isLoadingModels = false;
+        _modelsFailed = true;
+        _error = message;
+      });
+    }
+  }
+
+  String? get _modelsHint {
+    if (_isLoadingModels) {
+      return 'Učitavanje...';
+    }
+    if (_brandId == null) {
+      return 'Prvo odaberite marku';
+    }
+    if (_modelsFailed) {
+      return 'Modeli nisu učitani';
+    }
+    return _models.isEmpty ? 'Marka nema modela' : null;
+  }
+
+  String? get _addModelBlockedReason {
+    if (_isSaving) {
+      return savingInProgressReason;
+    }
+    if (_brandId == null) {
+      return 'Prvo odaberite marku.';
+    }
+    if (_isLoadingModels) {
+      return 'Sačekajte da se modeli učitaju.';
+    }
+    return _modelsFailed ? 'Modeli nisu učitani. Ponovo odaberite marku.' : null;
+  }
+
+  Future<void> _addBrand() async {
+    final brand = await showNewBrandDialog(context);
+    if (brand == null || !mounted) {
+      return;
+    }
+    setState(() => _brands = [DropdownMenuItem<int>(value: brand.id, child: Text(brand.name)), ..._brands]);
+    await _selectAdded('brandId', brand.id, 'Marka je sačuvana.');
+  }
+
+  Future<void> _addModel() async {
+    final brandId = _brandId!;
+    final model = await showNewVehicleModelDialog(
+      context,
+      brandId: brandId,
+      brandName: _brands.firstWhere((item) => item.value == brandId).child,
+    );
+    if (model == null || !mounted) {
+      return;
+    }
+    setState(() => _models = [DropdownMenuItem<int>(value: model.id, child: Text(model.name)), ..._models]);
+    await _selectAdded('vehicleModelId', model.id, 'Model je sačuvan.');
+  }
+
+  // Promjena liste vraća polje na početnu vrijednost, pa se novi zapis bira tek poslije nje.
+  Future<void> _selectAdded(String field, int id, String message) async {
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted) {
+      _formKey.currentState?.fields[field]?.didChange(id);
+      showSnack(context, message);
+    }
+  }
+
+  void _close() => Navigator.pop(context, _wasSaved);
 
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
       title: _vehicle == null ? 'Novo vozilo' : 'Izmjena vozila',
       menuLabel: VehicleListScreen.title,
-      child: _buildBody(),
+      onBack: _close,
+      navigationBlockedReason: _isSaving ? savingInProgressReason : null,
+      child: Stack(
+        children: [
+          Positioned.fill(child: _buildBody()),
+          // U desnoj margini forme i izvan dijela koji se pomjera.
+          Positioned(top: 8, right: 16, child: FormCloseButton(isSaving: _isSaving, onClose: _close)),
+        ],
+      ),
     );
   }
 
@@ -186,13 +273,15 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
     }
 
     final vehicle = widget.vehicle;
+    // Početni model važi samo dok je u listi; padajuća lista ne prihvata početnu vrijednost izvan liste.
+    final modelInList = _models.any((item) => item.value == vehicle?.vehicleModelId);
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(64, 32, 64, 32),
       child: FormBuilder(
         key: _formKey,
         initialValue: {
           'brandId': vehicle?.brandId,
-          'vehicleModelId': vehicle?.vehicleModelId,
+          'vehicleModelId': modelInList ? vehicle?.vehicleModelId : null,
           'categoryId': vehicle?.categoryId,
           'fuelTypeId': vehicle?.fuelTypeId,
           'transmissionTypeId': vehicle?.transmissionTypeId,
@@ -221,7 +310,7 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 OutlinedButton(
-                  onPressed: _isSaving ? null : () => Navigator.pop(context, _wasSaved),
+                  onPressed: _isSaving ? null : _close,
                   child: const Text('Odustani'),
                 ),
                 const SizedBox(width: 16),
@@ -245,19 +334,29 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _row(
-          _dropdown(
-            name: 'brandId',
-            label: 'Marka',
-            items: _brands,
-            requiredMessage: 'Marka je obavezna.',
-            onChanged: _onBrandChanged,
+          FieldWithAddButton(
+            tooltip: 'Nova marka',
+            blockedReason: _isSaving ? savingInProgressReason : null,
+            onAdd: _addBrand,
+            field: _dropdown(
+              name: 'brandId',
+              label: 'Marka',
+              items: _brands,
+              requiredMessage: 'Marka je obavezna.',
+              onChanged: _onBrandChanged,
+            ),
           ),
-          _dropdown(
-            name: 'vehicleModelId',
-            label: 'Model',
-            items: _models,
-            requiredMessage: 'Model je obavezan.',
-            hint: _isLoadingModels ? 'Učitavanje...' : (_models.isEmpty ? 'Prvo odaberite marku' : null),
+          FieldWithAddButton(
+            tooltip: 'Novi model',
+            blockedReason: _addModelBlockedReason,
+            onAdd: _addModel,
+            field: _dropdown(
+              name: 'vehicleModelId',
+              label: 'Model',
+              items: _models,
+              requiredMessage: 'Model je obavezan.',
+              hint: _modelsHint,
+            ),
           ),
         ),
         _row(
@@ -378,12 +477,23 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
         labelText: label,
         floatingLabelBehavior: hint == null ? null : FloatingLabelBehavior.always,
       ),
-      // Lista modela je prazna (onemogućena) dok se ne odabere marka.
-      disabledHint: hint == null ? null : Text(hint),
+      // Poruka objašnjava zašto je lista prazna (onemogućena); u užem polju se smanji umjesto da se prelomi.
+      disabledHint: hint == null
+          ? null
+          : FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(hint)),
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(8),
       iconEnabledColor: AppColors.textMuted,
       items: items,
+      // Odabrani naziv stane u jedan red; cijeli se vidi u otvorenoj listi.
+      selectedItemBuilder: (_) => [
+        for (final item in items)
+          DefaultTextStyle.merge(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            child: Align(alignment: Alignment.centerLeft, child: item.child),
+          ),
+      ],
       validator: requiredValue(requiredMessage),
       onChanged: onChanged,
     );
@@ -395,7 +505,13 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
       // Fajl s ekstenzijom .png/.jpg ne mora biti ispravna slika; server ga tada odbija pri spremanju.
       preview = Image.memory(_imageBytes!, fit: BoxFit.cover, errorBuilder: (_, _, _) => const ImagePlaceholder());
     } else if (_vehicle?.hasImage ?? false) {
-      preview = VehicleImage(vehicle: _vehicle!, provider: context.read<VehicleProvider>(), width: 360, height: 240);
+      preview = VehicleImage(
+        vehicleId: _vehicle!.id,
+        hasImage: true,
+        provider: context.read<VehicleProvider>(),
+        width: 360,
+        height: 240,
+      );
     } else {
       preview = const ImagePlaceholder();
     }
@@ -447,10 +563,13 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
       );
     } catch (e) {
       debugPrint('Odabir slike nije uspio: $e');
-      setState(() => _imageError = 'Odabir slike nije uspio.');
+      if (mounted) {
+        setState(() => _imageError = 'Odabir slike nije uspio.');
+      }
       return;
     }
-    if (file == null) {
+    // Ekran se može zatvoriti dok je prozor za odabir fajla otvoren.
+    if (file == null || !mounted) {
       return;
     }
 
@@ -461,12 +580,18 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
     }
     // Veličina se provjerava prije čitanja i slanja; veliki upload bi inače čekao odgovor servera.
     final length = await file.length();
+    if (!mounted) {
+      return;
+    }
     if (length != null && length > _maxImageBytes) {
       setState(() => _imageError = 'Slika može imati najviše 2 MB.');
       return;
     }
 
     final bytes = await file.readAsBytes();
+    if (!mounted) {
+      return;
+    }
     if (bytes.isEmpty || bytes.length > _maxImageBytes) {
       setState(() => _imageError = bytes.isEmpty ? 'Odabrani fajl je prazan.' : 'Slika može imati najviše 2 MB.');
       return;
@@ -513,6 +638,15 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
         focusFirstError(form, 'brandId');
       }
       return;
+    } catch (e) {
+      debugPrint('Spremanje vozila nije uspjelo: $e');
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          _error = unexpectedSaveError;
+        });
+      }
+      return;
     }
 
     if (_imageBytes != null) {
@@ -525,19 +659,27 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
       } on UnauthorizedException {
         return;
       } on ApiClientException catch (e) {
-        if (mounted) {
-          // Podaci su sačuvani, pa se ekran prebacuje u izmjenu; ponovni klik šalje samo izmjene i sliku.
-          setState(() {
-            _isSaving = false;
-            _error = 'Podaci vozila su sačuvani, ali slika nije: ${e.message}';
-          });
-        }
+        _showImageSaveError(e.message);
+        return;
+      } catch (e) {
+        debugPrint('Spremanje slike nije uspjelo: $e');
+        _showImageSaveError('neočekivana greška.');
         return;
       }
     }
 
     if (mounted) {
-      Navigator.pop(context, true);
+      closeForm(context, saved: true);
+    }
+  }
+
+  void _showImageSaveError(String message) {
+    if (mounted) {
+      // Podaci su sačuvani, pa se ekran prebacuje u izmjenu; ponovni klik šalje samo izmjene i sliku.
+      setState(() {
+        _isSaving = false;
+        _error = 'Podaci vozila su sačuvani, ali slika nije: $message';
+      });
     }
   }
 }

@@ -16,6 +16,7 @@ VehicleMaintenance _$VehicleMaintenanceFromJson(Map<String, dynamic> json) =>
       vehicleId: (json['vehicleId'] as num).toInt(),
       vehicleName: json['vehicleName'] as String,
       vehicleRegistrationNumber: json['vehicleRegistrationNumber'] as String,
+      vehicleHasImage: json['vehicleHasImage'] as bool,
     );
 
 Map<String, dynamic> _$VehicleMaintenanceToJson(VehicleMaintenance instance) =>
@@ -28,4 +29,5 @@ Map<String, dynamic> _$VehicleMaintenanceToJson(VehicleMaintenance instance) =>
       'vehicleId': instance.vehicleId,
       'vehicleName': instance.vehicleName,
       'vehicleRegistrationNumber': instance.vehicleRegistrationNumber,
+      'vehicleHasImage': instance.vehicleHasImage,
     };

@@ -16,6 +16,7 @@ import '../widgets/data_table_card.dart';
 import '../widgets/date_filter_field.dart';
 import '../widgets/form_dialog.dart';
 import '../widgets/vehicle_search_field.dart';
+import 'vehicle_list_screen.dart';
 
 /// Servis vozila (prijava: „Upravljanje servisima vozila”): pretraga po vozilu ili datumu, dodavanje,
 /// izmjena i brisanje. Servis koji se preklapa s rezervacijom ili drugim servisom odbija backend.
@@ -66,7 +67,7 @@ class _VehicleMaintenanceScreenState extends State<VehicleMaintenanceScreen> {
           TableColumnDef('Trošak'),
         ],
         cells: (item) => [
-          Text(item.vehicleName),
+          _VehicleCell(item: item, provider: vehicleProvider),
           Text(item.vehicleRegistrationNumber),
           _DateTimeCell(item.startAt),
           _DateTimeCell(item.endAt),
@@ -183,6 +184,34 @@ class _VehicleMaintenanceScreenState extends State<VehicleMaintenanceScreen> {
       decoration: InputDecoration(labelText: label, suffixIcon: const Icon(Icons.calendar_today_outlined)),
       validator: validator,
       valueTransformer: (value) => value?.toUtc().toIso8601String(),
+    );
+  }
+}
+
+/// Slika i naziv vozila u istoj ćeliji (upute 6).
+class _VehicleCell extends StatelessWidget {
+  const _VehicleCell({required this.item, required this.provider});
+
+  final VehicleMaintenance item;
+  final VehicleProvider provider;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 12),
+      child: Row(
+        children: [
+          VehicleImage(
+            vehicleId: item.vehicleId,
+            hasImage: item.vehicleHasImage,
+            provider: provider,
+            width: 64,
+            height: 40,
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: Text(item.vehicleName, textAlign: TextAlign.start)),
+        ],
+      ),
     );
   }
 }

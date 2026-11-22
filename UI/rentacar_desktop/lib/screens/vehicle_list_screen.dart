@@ -48,7 +48,7 @@ class VehicleListScreen extends StatelessWidget {
           TableColumnDef('Status'),
         ],
         cells: (item) => [
-          VehicleImage(vehicle: item, provider: provider, width: 112, height: 64),
+          VehicleImage(vehicleId: item.id, hasImage: item.hasImage, provider: provider, width: 112, height: 64),
           Text(item.name),
           Text(item.registrationNumber),
           Text(item.categoryName),
@@ -88,13 +88,15 @@ class VehicleListScreen extends StatelessWidget {
 class VehicleImage extends StatelessWidget {
   const VehicleImage({
     super.key,
-    required this.vehicle,
+    required this.vehicleId,
+    required this.hasImage,
     required this.provider,
     required this.width,
     required this.height,
   });
 
-  final Vehicle vehicle;
+  final int vehicleId;
+  final bool hasImage;
   final VehicleProvider provider;
   final double width;
   final double height;
@@ -106,9 +108,9 @@ class VehicleImage extends StatelessWidget {
       child: SizedBox(
         width: width,
         height: height,
-        child: vehicle.hasImage
+        child: hasImage
             ? Image.network(
-                provider.imageUrl(vehicle.id),
+                provider.imageUrl(vehicleId),
                 headers: provider.imageHeaders(),
                 fit: BoxFit.cover,
                 // Slika se dekodira u veličini u kojoj se prikazuje, ne u punoj rezoluciji.

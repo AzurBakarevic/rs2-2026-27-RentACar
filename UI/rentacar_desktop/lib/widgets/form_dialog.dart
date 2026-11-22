@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import '../utils/api_client_exception.dart';
 import '../utils/app_theme.dart';
 import '../utils/form_errors.dart';
+import '../utils/utils_widgets.dart';
+import 'form_close_button.dart';
 
 /// Forma u dijalogu (šifarnici, oprema, servisi, sezonske cijene). [buildFields] dobija funkciju
 /// za slanje forme (npr. na Enter u tekstualnom polju). Vraća `true` ako je zapis sačuvan.
@@ -67,25 +69,38 @@ class _FormDialogState extends State<_FormDialog> {
   Widget build(BuildContext context) {
     final fields = widget.buildFields(_save);
     return AlertDialog(
-      title: Text(widget.title),
-      scrollable: true,
+      titlePadding: const EdgeInsets.fromLTRB(24, 20, 12, 0),
+      title: SizedBox(
+        width: widget.width + 12,
+        child: Row(
+          children: [
+            Expanded(child: Text(widget.title)),
+            FormCloseButton(isSaving: _isSaving, onClose: () => Navigator.pop(context, false)),
+          ],
+        ),
+      ),
+      // Pomjeraju se samo polja: naslov i „X” ostaju vidljivi, a traka za pomjeranje je pored polja.
+      contentPadding: EdgeInsets.zero,
       content: SizedBox(
-        width: widget.width,
-        child: FormBuilder(
-          key: widget.formKey,
-          initialValue: widget.initialValue,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Poruka je uvijek na istom mjestu u listi, inače bi se polja ispod nje
-              // napravila iznova i izgubila fokus.
-              _buildError(),
-              for (var i = 0; i < fields.length; i++) ...[
-                if (i > 0) const SizedBox(height: 16),
-                fields[i],
+        width: widget.width + 48,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          child: FormBuilder(
+            key: widget.formKey,
+            initialValue: widget.initialValue,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Poruka je uvijek na istom mjestu u listi, inače bi se polja ispod nje
+                // napravila iznova i izgubila fokus.
+                _buildError(),
+                for (var i = 0; i < fields.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 16),
+                  fields[i],
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -137,7 +152,7 @@ class _FormDialogState extends State<_FormDialog> {
     try {
       await widget.onSave(Map<String, dynamic>.from(form.value));
       if (mounted) {
-        Navigator.pop(context, true);
+        closeForm(context, saved: true);
       }
     } on UnauthorizedException {
       // Aplikacija se već vraća na prijavu.
@@ -150,6 +165,14 @@ class _FormDialogState extends State<_FormDialog> {
         _error = applyServerErrors(form, e);
       });
       focusFirstError(form, widget.focusField);
+    } catch (e) {
+      debugPrint('Spremanje forme „${widget.title}” nije uspjelo: $e');
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          _error = unexpectedSaveError;
+        });
+      }
     }
   }
 }
