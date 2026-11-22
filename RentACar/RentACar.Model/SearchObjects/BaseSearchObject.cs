@@ -12,4 +12,8 @@ public class BaseSearchObject
     public int? PageSize { get; set; } = DefaultPageSize;
 
     public bool? IncludeTotalCount { get; set; } = false;
+
+    // Tabelarni pregledi: posljednje dodan zapis prvi (upute 6). Bez toga važi redoslijed servisa,
+    // npr. po nazivu za padajuće liste.
+    public bool? NewestFirst { get; set; } = false;
 }
