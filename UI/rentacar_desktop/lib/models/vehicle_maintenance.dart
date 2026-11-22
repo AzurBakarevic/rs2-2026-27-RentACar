@@ -15,6 +15,7 @@ class VehicleMaintenance {
   /// Marka i model, npr. „Volkswagen Golf”.
   final String vehicleName;
   final String vehicleRegistrationNumber;
+  final bool vehicleHasImage;
 
   VehicleMaintenance({
     required this.id,
@@ -25,6 +26,7 @@ class VehicleMaintenance {
     required this.vehicleId,
     required this.vehicleName,
     required this.vehicleRegistrationNumber,
+    required this.vehicleHasImage,
   });
 
   factory VehicleMaintenance.fromJson(Map<String, dynamic> json) => _$VehicleMaintenanceFromJson(json);

@@ -395,7 +395,13 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
       // Fajl s ekstenzijom .png/.jpg ne mora biti ispravna slika; server ga tada odbija pri spremanju.
       preview = Image.memory(_imageBytes!, fit: BoxFit.cover, errorBuilder: (_, _, _) => const ImagePlaceholder());
     } else if (_vehicle?.hasImage ?? false) {
-      preview = VehicleImage(vehicle: _vehicle!, provider: context.read<VehicleProvider>(), width: 360, height: 240);
+      preview = VehicleImage(
+        vehicleId: _vehicle!.id,
+        hasImage: true,
+        provider: context.read<VehicleProvider>(),
+        width: 360,
+        height: 240,
+      );
     } else {
       preview = const ImagePlaceholder();
     }
