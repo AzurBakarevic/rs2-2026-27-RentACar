@@ -4,10 +4,13 @@ import '../utils/app_theme.dart';
 
 /// Dugmad za izmjenu i brisanje u koloni „Akcije”.
 class TableActionButtons extends StatelessWidget {
-  const TableActionButtons({super.key, this.onEdit, this.onDelete});
+  const TableActionButtons({super.key, this.onEdit, this.onDelete, this.deleteBlockedReason});
 
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+
+  /// Kad je zadan, „Obriši” je onemogućeno, a razlog se prikazuje kad se pređe mišem preko dugmeta.
+  final String? deleteBlockedReason;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +19,12 @@ class TableActionButtons extends StatelessWidget {
       children: [
         if (onEdit != null) _ActionButton(icon: Icons.edit_outlined, tooltip: 'Izmijeni', onPressed: onEdit!),
         if (onEdit != null && onDelete != null) const SizedBox(width: 12),
-        if (onDelete != null) _ActionButton(icon: Icons.delete_outline, tooltip: 'Obriši', onPressed: onDelete!),
+        if (onDelete != null)
+          _ActionButton(
+            icon: Icons.delete_outline,
+            tooltip: deleteBlockedReason ?? 'Obriši',
+            onPressed: deleteBlockedReason == null ? onDelete : null,
+          ),
       ],
     );
   }
@@ -27,7 +35,7 @@ class _ActionButton extends StatelessWidget {
 
   final IconData icon;
   final String tooltip;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {

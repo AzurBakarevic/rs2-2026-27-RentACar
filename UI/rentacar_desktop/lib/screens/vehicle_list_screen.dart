@@ -3,6 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../layouts/master_screen.dart';
 import '../models/vehicle.dart';
+import '../providers/category_provider.dart';
+import '../providers/fuel_type_provider.dart';
+import '../providers/transmission_type_provider.dart';
+import '../providers/vehicle_model_provider.dart';
 import '../providers/vehicle_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatters.dart';
@@ -57,8 +61,26 @@ class VehicleListScreen extends StatelessWidget {
           );
           return saved ?? false;
         },
+        newBlockedReason: () => _newBlockedReason(context),
+        deleteBlockedReason: (item) => item.deleteBlockedReason,
       ),
     );
+  }
+
+  // Forma bira iz ovih šifarnika; marka se ne provjerava posebno, jer model bez marke ne postoji.
+  static Future<String?> _newBlockedReason(BuildContext context) async {
+    final exists = await Future.wait([
+      context.read<VehicleModelProvider>().hasAny(),
+      context.read<CategoryProvider>().hasAny(),
+      context.read<FuelTypeProvider>().hasAny(),
+      context.read<TransmissionTypeProvider>().hasAny(),
+    ]);
+    const names = ['model vozila', 'kategoriju', 'vrstu goriva', 'vrstu mjenjača'];
+    final missing = [
+      for (var i = 0; i < names.length; i++)
+        if (!exists[i]) names[i],
+    ];
+    return missing.isEmpty ? null : 'Prvo u Šifarnicima dodajte: ${missing.join(', ')}.';
   }
 }
 

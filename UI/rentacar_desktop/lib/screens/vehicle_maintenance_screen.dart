@@ -38,6 +38,7 @@ class _VehicleMaintenanceScreenState extends State<VehicleMaintenanceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final vehicleProvider = context.read<VehicleProvider>();
     return MasterScreen(
       title: VehicleMaintenanceScreen.title,
       child: CrudListView<VehicleMaintenance>(
@@ -46,6 +47,8 @@ class _VehicleMaintenanceScreenState extends State<VehicleMaintenanceScreen> {
         searchKey: 'text',
         extraFilter: _dateFilter,
         filters: [DateFilterField(value: _date, onChanged: (value) => setState(() => _date = value))],
+        onClearFilters: () => setState(() => _date = null),
+        newBlockedReason: () async => await vehicleProvider.hasAny() ? null : 'Prvo dodajte vozilo na ekranu Vozila.',
         labels: CrudListLabels(
           searchHint: 'po vozilu ili registraciji',
           newItem: 'Novi servis',

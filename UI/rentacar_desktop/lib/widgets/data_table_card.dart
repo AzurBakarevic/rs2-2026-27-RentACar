@@ -19,6 +19,7 @@ class DataTableCard extends StatelessWidget {
     this.error,
     this.onRetry,
     this.emptyText = 'Nema zapisa.',
+    this.scrollController,
   });
 
   final List<TableColumnDef> columns;
@@ -27,6 +28,7 @@ class DataTableCard extends StatelessWidget {
   final String? error;
   final VoidCallback? onRetry;
   final String emptyText;
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +100,7 @@ class DataTableCard extends StatelessWidget {
     return Stack(
       children: [
         ListView.separated(
+          controller: scrollController,
           shrinkWrap: true,
           itemCount: rows.length,
           separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.border),
