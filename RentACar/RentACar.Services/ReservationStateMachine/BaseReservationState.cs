@@ -51,6 +51,9 @@ public class BaseReservationState
     // Akcije (ReservationActions) koje prijavljeni korisnik sada smije izvršiti; u završnim stanjima nema nijedne.
     public virtual List<string> GetAllowedActions(ReservationResponse reservation) => [];
 
+    // Akcije koje postoje u ovom stanju, ali trenutno nisu dozvoljene, svaka s razlogom.
+    public virtual Dictionary<string, string> GetActionBlockedReasons(ReservationResponse reservation) => [];
+
     // null = rezervacija još ne postoji (kreiranje).
     public BaseReservationState GetReservationState(ReservationStatus? status) => status switch
     {
@@ -109,17 +112,27 @@ public class BaseReservationState
     // Korisnik otkazuje svoju rezervaciju (na čekanju ili potvrđenu) najkasnije 24 sata prije preuzimanja (prijava).
     protected Task CancelByCustomerAsync(Reservation reservation, string? reason)
     {
-        if (!ReservationRules.CanCustomerCancel(reservation.PickupAt, DateTime.UtcNow))
-        {
-            throw new ClientException(
-                $"Rezervaciju je moguće otkazati najkasnije {ReservationRules.CustomerCancellationNoticeHours} sata prije preuzimanja vozila.");
-        }
+        EnsureNotBlocked(ReservationBlockedReasons.CancelByCustomer(reservation.PickupAt, DateTime.UtcNow));
 
         return ChangeStatusAsync(reservation, ReservationStatus.Cancelled, reason, ReservationNotifications.CancelledByCustomer);
     }
 
     protected static List<string> CustomerActions(ReservationResponse reservation)
         => ReservationRules.CanCustomerCancel(reservation.PickupAt, DateTime.UtcNow) ? [ReservationActions.Cancel] : [];
+
+    protected static Dictionary<string, string> CustomerBlockedReasons(ReservationResponse reservation)
+        => BlockedOnly((ReservationActions.Cancel, ReservationBlockedReasons.CancelByCustomer(reservation.PickupAt, DateTime.UtcNow)));
+
+    protected static Dictionary<string, string> BlockedOnly(params (string Action, string? Reason)[] actions)
+        => actions.Where(x => x.Reason != null).ToDictionary(x => x.Action, x => x.Reason!);
+
+    protected static void EnsureNotBlocked(string? blockedReason)
+    {
+        if (blockedReason != null)
+        {
+            throw new ClientException(blockedReason);
+        }
+    }
 
     private static ClientException NotAllowed(Reservation reservation)
     {

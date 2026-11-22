@@ -27,10 +27,7 @@ public class PendingReservationState : BaseReservationState
     public override async Task ConfirmAsync(Reservation reservation)
     {
         var payment = await _paymentHandler.SyncAsync(reservation);
-        if (payment?.Status != PaymentStatus.Paid)
-        {
-            throw new ClientException("Potvrditi se može samo plaćena rezervacija.");
-        }
+        EnsureNotBlocked(ReservationBlockedReasons.Confirm(payment?.Status == PaymentStatus.Paid));
 
         await ChangeStatusAsync(reservation, ReservationStatus.Confirmed, null, ReservationNotifications.Confirmed);
     }
@@ -96,4 +93,9 @@ public class PendingReservationState : BaseReservationState
             ? [ReservationActions.Confirm, ReservationActions.Reject]
             : [ReservationActions.Reject];
     }
+
+    public override Dictionary<string, string> GetActionBlockedReasons(ReservationResponse reservation)
+        => IsAdministrator
+            ? BlockedOnly((ReservationActions.Confirm, ReservationBlockedReasons.Confirm(reservation.IsPaid)))
+            : CustomerBlockedReasons(reservation);
 }

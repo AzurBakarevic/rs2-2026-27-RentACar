@@ -1,6 +1,5 @@
 using RentACar.Model.Constants;
 using RentACar.Model.Enums;
-using RentACar.Model.Exceptions;
 using RentACar.Model.Responses;
 using RentACar.Services.Database;
 using RentACar.Services.Helpers;
@@ -25,10 +24,7 @@ public class ConfirmedReservationState : BaseReservationState
     // Najam se može završiti tek kad je vozilo preuzeto; vraćanje prije dogovorenog kraja je dozvoljeno.
     public override Task CompleteAsync(Reservation reservation)
     {
-        if (DateTime.UtcNow < reservation.PickupAt)
-        {
-            throw new ClientException("Rezervacija se može završiti tek nakon preuzimanja vozila.");
-        }
+        EnsureNotBlocked(ReservationBlockedReasons.Complete(reservation.PickupAt, DateTime.UtcNow));
 
         return ChangeStatusAsync(reservation, ReservationStatus.Completed, null, ReservationNotifications.Completed);
     }
@@ -44,10 +40,7 @@ public class ConfirmedReservationState : BaseReservationState
         }
         else
         {
-            if (DateTime.UtcNow >= reservation.ReturnAt)
-            {
-                throw new ClientException("Period najma je istekao, pa se rezervacija ne može otkazati. Označite je kao završenu.");
-            }
+            EnsureNotBlocked(ReservationBlockedReasons.CancelByAdministrator(reservation.ReturnAt, DateTime.UtcNow));
 
             await ChangeStatusAsync(reservation, ReservationStatus.Cancelled, reason,
                 (r, vehicleName) => ReservationNotifications.CancelledByAdministrator(r, vehicleName, reason!));
@@ -66,16 +59,30 @@ public class ConfirmedReservationState : BaseReservationState
         var now = DateTime.UtcNow;
         var actions = new List<string>();
 
-        if (now >= reservation.PickupAt)
+        if (ReservationBlockedReasons.Complete(reservation.PickupAt, now) == null)
         {
             actions.Add(ReservationActions.Complete);
         }
 
-        if (now < reservation.ReturnAt)
+        if (ReservationBlockedReasons.CancelByAdministrator(reservation.ReturnAt, now) == null)
         {
             actions.Add(ReservationActions.Cancel);
         }
 
         return actions;
+    }
+
+    public override Dictionary<string, string> GetActionBlockedReasons(ReservationResponse reservation)
+    {
+        if (!IsAdministrator)
+        {
+            return CustomerBlockedReasons(reservation);
+        }
+
+        var now = DateTime.UtcNow;
+
+        return BlockedOnly(
+            (ReservationActions.Complete, ReservationBlockedReasons.Complete(reservation.PickupAt, now)),
+            (ReservationActions.Cancel, ReservationBlockedReasons.CancelByAdministrator(reservation.ReturnAt, now)));
     }
 }

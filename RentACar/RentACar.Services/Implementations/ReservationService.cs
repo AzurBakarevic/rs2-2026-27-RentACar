@@ -111,8 +111,7 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
 
         foreach (var item in result.Items)
         {
-            item.PaymentDeadline = PaymentRules.GetPaymentDeadline(item.CreatedAt);
-            item.AllowedActions = GetAllowedActions(item);
+            SetComputedFields(item);
         }
 
         return result;
@@ -145,8 +144,7 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
             .ProjectToType<ReservationStatusHistoryResponse>(_mapper.Config)
             .ToListAsync();
 
-        reservation.PaymentDeadline = PaymentRules.GetPaymentDeadline(reservation.CreatedAt);
-        reservation.AllowedActions = GetAllowedActions(reservation);
+        SetComputedFields(reservation);
 
         return reservation;
     }
@@ -241,6 +239,13 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
         return query.Where(x => x.UserId == userId);
     }
 
-    private List<string> GetAllowedActions(ReservationResponse reservation)
-        => _reservationState.GetReservationState(reservation.Status).GetAllowedActions(reservation);
+    // Polja koja se ne čitaju iz baze: rok za plaćanje i akcije po pravilima stanja rezervacije.
+    private void SetComputedFields(ReservationResponse reservation)
+    {
+        reservation.PaymentDeadline = PaymentRules.GetPaymentDeadline(reservation.CreatedAt);
+
+        var state = _reservationState.GetReservationState(reservation.Status);
+        reservation.AllowedActions = state.GetAllowedActions(reservation);
+        reservation.ActionBlockedReasons = state.GetActionBlockedReasons(reservation);
+    }
 }
