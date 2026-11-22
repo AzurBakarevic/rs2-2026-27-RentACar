@@ -10,7 +10,12 @@ TransmissionType _$TransmissionTypeFromJson(Map<String, dynamic> json) =>
     TransmissionType(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
+      deleteBlockedReason: json['deleteBlockedReason'] as String?,
     );
 
 Map<String, dynamic> _$TransmissionTypeToJson(TransmissionType instance) =>
-    <String, dynamic>{'id': instance.id, 'name': instance.name};
+    <String, dynamic>{
+      'id': instance.id,
+      'name': instance.name,
+      'deleteBlockedReason': instance.deleteBlockedReason,
+    };

@@ -14,12 +14,16 @@ class Equipment {
   /// Neaktivna oprema se ne nudi prilikom rezervacije.
   final bool isActive;
 
+  /// Razlog zbog kojeg se oprema ne može obrisati; `null` = može.
+  final String? deleteBlockedReason;
+
   Equipment({
     required this.id,
     required this.name,
     required this.pricePerDay,
     required this.quantity,
     required this.isActive,
+    this.deleteBlockedReason,
   });
 
   factory Equipment.fromJson(Map<String, dynamic> json) => _$EquipmentFromJson(json);

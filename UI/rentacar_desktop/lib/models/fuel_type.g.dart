@@ -6,10 +6,14 @@ part of 'fuel_type.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-FuelType _$FuelTypeFromJson(Map<String, dynamic> json) =>
-    FuelType(id: (json['id'] as num).toInt(), name: json['name'] as String);
+FuelType _$FuelTypeFromJson(Map<String, dynamic> json) => FuelType(
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String,
+  deleteBlockedReason: json['deleteBlockedReason'] as String?,
+);
 
 Map<String, dynamic> _$FuelTypeToJson(FuelType instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
+  'deleteBlockedReason': instance.deleteBlockedReason,
 };

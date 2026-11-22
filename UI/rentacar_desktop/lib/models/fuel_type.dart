@@ -10,8 +10,10 @@ class FuelType implements NamedEntity {
   final int id;
   @override
   final String name;
+  @override
+  final String? deleteBlockedReason;
 
-  FuelType({required this.id, required this.name});
+  FuelType({required this.id, required this.name, this.deleteBlockedReason});
 
   factory FuelType.fromJson(Map<String, dynamic> json) => _$FuelTypeFromJson(json);
 

@@ -12,8 +12,16 @@ class VehicleModel implements NamedEntity {
   final String name;
   final int brandId;
   final String brandName;
+  @override
+  final String? deleteBlockedReason;
 
-  VehicleModel({required this.id, required this.name, required this.brandId, required this.brandName});
+  VehicleModel({
+    required this.id,
+    required this.name,
+    required this.brandId,
+    required this.brandName,
+    this.deleteBlockedReason,
+  });
 
   factory VehicleModel.fromJson(Map<String, dynamic> json) => _$VehicleModelFromJson(json);
 

@@ -10,8 +10,10 @@ class Brand implements NamedEntity {
   final int id;
   @override
   final String name;
+  @override
+  final String? deleteBlockedReason;
 
-  Brand({required this.id, required this.name});
+  Brand({required this.id, required this.name, this.deleteBlockedReason});
 
   factory Brand.fromJson(Map<String, dynamic> json) => _$BrandFromJson(json);
 

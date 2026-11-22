@@ -10,8 +10,10 @@ class Category implements NamedEntity {
   final int id;
   @override
   final String name;
+  @override
+  final String? deleteBlockedReason;
 
-  Category({required this.id, required this.name});
+  Category({required this.id, required this.name, this.deleteBlockedReason});
 
   factory Category.fromJson(Map<String, dynamic> json) => _$CategoryFromJson(json);
 

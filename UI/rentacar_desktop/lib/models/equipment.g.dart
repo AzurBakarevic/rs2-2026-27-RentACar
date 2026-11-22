@@ -12,6 +12,7 @@ Equipment _$EquipmentFromJson(Map<String, dynamic> json) => Equipment(
   pricePerDay: (json['pricePerDay'] as num).toDouble(),
   quantity: (json['quantity'] as num).toInt(),
   isActive: json['isActive'] as bool,
+  deleteBlockedReason: json['deleteBlockedReason'] as String?,
 );
 
 Map<String, dynamic> _$EquipmentToJson(Equipment instance) => <String, dynamic>{
@@ -20,4 +21,5 @@ Map<String, dynamic> _$EquipmentToJson(Equipment instance) => <String, dynamic>{
   'pricePerDay': instance.pricePerDay,
   'quantity': instance.quantity,
   'isActive': instance.isActive,
+  'deleteBlockedReason': instance.deleteBlockedReason,
 };

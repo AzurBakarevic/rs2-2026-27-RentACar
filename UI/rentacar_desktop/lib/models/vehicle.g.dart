@@ -28,6 +28,7 @@ Vehicle _$VehicleFromJson(Map<String, dynamic> json) => Vehicle(
   transmissionTypeName: json['transmissionTypeName'] as String,
   averageRating: (json['averageRating'] as num?)?.toDouble(),
   reviewCount: (json['reviewCount'] as num).toInt(),
+  deleteBlockedReason: json['deleteBlockedReason'] as String?,
 );
 
 Map<String, dynamic> _$VehicleToJson(Vehicle instance) => <String, dynamic>{
@@ -52,4 +53,5 @@ Map<String, dynamic> _$VehicleToJson(Vehicle instance) => <String, dynamic>{
   'transmissionTypeName': instance.transmissionTypeName,
   'averageRating': instance.averageRating,
   'reviewCount': instance.reviewCount,
+  'deleteBlockedReason': instance.deleteBlockedReason,
 };

@@ -27,6 +27,9 @@ class Vehicle {
   final double? averageRating;
   final int reviewCount;
 
+  /// Razlog zbog kojeg se vozilo ne može obrisati; `null` = može.
+  final String? deleteBlockedReason;
+
   Vehicle({
     required this.id,
     required this.registrationNumber,
@@ -49,6 +52,7 @@ class Vehicle {
     required this.transmissionTypeName,
     this.averageRating,
     required this.reviewCount,
+    this.deleteBlockedReason,
   });
 
   /// Marka i model, npr. „Volkswagen Golf”.

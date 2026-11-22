@@ -2,4 +2,7 @@
 abstract interface class NamedEntity {
   int get id;
   String get name;
+
+  /// Razlog zbog kojeg se zapis ne može obrisati; `null` = može.
+  String? get deleteBlockedReason;
 }
