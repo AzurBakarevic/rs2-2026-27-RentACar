@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -33,9 +35,16 @@ final List<_MenuEntry> _menuEntries = [
 Widget buildHomeScreen() => _menuEntries.first.builder();
 
 /// Okvir svih ekrana: meni lijevo, naslov i prijavljeni korisnik gore.
-class MasterScreen extends StatelessWidget {
-  const MasterScreen({super.key, required this.title, required this.child, String? menuLabel})
-      : menuLabel = menuLabel ?? title;
+/// Ekran otvoren s drugog ekrana dobija i dugme „Nazad” (upute 6).
+class MasterScreen extends StatefulWidget {
+  const MasterScreen({
+    super.key,
+    required this.title,
+    required this.child,
+    String? menuLabel,
+    this.onBack,
+    this.navigationBlockedReason,
+  }) : menuLabel = menuLabel ?? title;
 
   final String title;
   final Widget child;
@@ -43,26 +52,69 @@ class MasterScreen extends StatelessWidget {
   /// Stavka menija koja je označena (detalji vozila npr. pripadaju stavci „Vozila”).
   final String menuLabel;
 
+  /// Akcija dugmeta „Nazad” kad ekran vraća rezultat; inače se ekran samo zatvara.
+  final VoidCallback? onBack;
+
+  /// Razlog zbog kojeg se ekran trenutno ne može napustiti (npr. spremanje u toku) ili `null`.
+  final String? navigationBlockedReason;
+
+  @override
+  State<MasterScreen> createState() => _MasterScreenState();
+}
+
+class _MasterScreenState extends State<MasterScreen> {
+  // U užem prozoru se okvir pomjera vodoravno, jer tabele ne stanu u manju širinu.
+  static const double _minWidth = 1280;
+
+  final _horizontalController = ScrollController();
+
+  bool get _canNavigate => widget.navigationBlockedReason == null;
+
+  @override
+  void dispose() {
+    _horizontalController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildSidebar(context),
-          const VerticalDivider(width: 1, color: AppColors.border),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildTopBar(context),
-                const Divider(height: 1, color: AppColors.border),
-                Expanded(child: child),
-              ],
+      // Stablo je isto u svakoj širini, da promjena veličine prozora ne isprazni formu.
+      body: LayoutBuilder(
+        builder: (context, constraints) => Scrollbar(
+          controller: _horizontalController,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: _horizontalController,
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: max(constraints.maxWidth, _minWidth),
+              height: constraints.maxHeight,
+              child: _buildFrame(context),
             ),
           ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildFrame(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSidebar(context),
+        const VerticalDivider(width: 1, color: AppColors.border),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildTopBar(context),
+              const Divider(height: 1, color: AppColors.border),
+              Expanded(child: widget.child),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -103,32 +155,40 @@ class MasterScreen extends StatelessWidget {
   }
 
   Widget _buildMenuItem(BuildContext context, _MenuEntry entry) {
-    final selected = entry.label == menuLabel;
+    final selected = entry.label == widget.menuLabel;
+    final textColor = selected
+        ? Colors.white
+        : _canNavigate
+            ? AppColors.textDark
+            : Theme.of(context).disabledColor;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: selected ? AppColors.primary : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
+      child: Tooltip(
+        message: widget.navigationBlockedReason ?? '',
+        child: Material(
+          color: selected ? AppColors.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          onTap: selected
-              ? null
-              : () => Navigator.of(context).pushAndRemoveUntil(
-                    PageRouteBuilder(
-                      pageBuilder: (_, _, _) => entry.builder(),
-                      transitionDuration: Duration.zero,
-                      reverseTransitionDuration: Duration.zero,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: selected || !_canNavigate
+                ? null
+                : () => Navigator.of(context).pushAndRemoveUntil(
+                      PageRouteBuilder(
+                        pageBuilder: (_, _, _) => entry.builder(),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
+                      ),
+                      (route) => false,
                     ),
-                    (route) => false,
-                  ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            child: Text(
-              entry.label,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                color: selected ? Colors.white : AppColors.textDark,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              child: Text(
+                entry.label,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  color: textColor,
+                ),
               ),
             ),
           ),
@@ -143,14 +203,26 @@ class MasterScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 64),
       child: Row(
         children: [
+          if (ModalRoute.of(context)?.impliesAppBarDismissal ?? false) ...[
+            Tooltip(
+              message: widget.navigationBlockedReason ?? '',
+              child: OutlinedButton.icon(
+                onPressed: _canNavigate ? (widget.onBack ?? () => Navigator.maybePop(context)) : null,
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('Nazad'),
+              ),
+            ),
+            const SizedBox(width: 24),
+          ],
           Expanded(
             child: Text(
-              title,
+              widget.title,
               style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: AppColors.textDark),
             ),
           ),
           PopupMenuButton<String>(
-            tooltip: 'Korisnički meni',
+            enabled: _canNavigate,
+            tooltip: widget.navigationBlockedReason ?? 'Korisnički meni',
             position: PopupMenuPosition.under,
             onSelected: (value) {
               if (value == 'logout') {
