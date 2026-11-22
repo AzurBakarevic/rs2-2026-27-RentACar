@@ -10,8 +10,11 @@ import '../utils/api_client_exception.dart';
 import 'auth_provider.dart';
 
 abstract class BaseProvider<T> with ChangeNotifier {
-  // Adresa API-ja (isti port kao u docker-compose); druga adresa se zadaje s --dart-define=baseUrl=...
-  static const String baseUrl = String.fromEnvironment('baseUrl', defaultValue: 'http://localhost:5001/');
+  // Adresa API-ja (isti port kao u docker-compose); druga adresa se zadaje s --dart-define=API_BASE_URL=... (upute 3.3).
+  static const String _apiBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:5001/');
+
+  /// Uvijek završava s „/”, pa adresa može biti zadana i bez nje (kao u primjeru iz uputa).
+  static final String baseUrl = _apiBaseUrl.endsWith('/') ? _apiBaseUrl : '$_apiBaseUrl/';
 
   static const Duration requestTimeout = Duration(seconds: 30);
 
@@ -29,6 +32,12 @@ abstract class BaseProvider<T> with ChangeNotifier {
     result.totalCount = data['totalCount'];
     result.items = List<T>.from(data['items'].map((e) => fromJson(e)));
     return result;
+  }
+
+  /// Da li postoji bar jedan zapis (preduslov za formu koja ga bira, upute 6).
+  Future<bool> hasAny() async {
+    final result = await get(filter: {'pageSize': 1});
+    return result.items?.isNotEmpty ?? false;
   }
 
   Future<T> getById(int id) async {
