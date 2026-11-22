@@ -2,6 +2,7 @@ using Mapster;
 using RentACar.Model.Enums;
 using RentACar.Model.Responses;
 using RentACar.Services.Database;
+using RentACar.Services.Helpers;
 
 namespace RentACar.Services.Mapping;
 
@@ -18,7 +19,34 @@ public class MappingConfig : IRegister
             .Map(dest => dest.HasImage, src => src.Image != null)
             .Map(dest => dest.AverageRating,
                 src => src.Reservations.Where(r => r.Review != null).Average(r => (double?)r.Review!.Rating))
-            .Map(dest => dest.ReviewCount, src => src.Reservations.Count(r => r.Review != null));
+            .Map(dest => dest.ReviewCount, src => src.Reservations.Count(r => r.Review != null))
+            .Map(dest => dest.DeleteBlockedReason,
+                src => src.Reservations.Any() ? DeleteBlockedReasons.VehicleHasReservations : null);
+
+        // Da li se zapis koristi računa se u istom upitu kao lista, bez upita po redu (upute 8.2).
+        config.NewConfig<Brand, BrandResponse>()
+            .Map(dest => dest.DeleteBlockedReason,
+                src => src.Models.Any() ? DeleteBlockedReasons.BrandHasModels : null);
+
+        config.NewConfig<VehicleModel, VehicleModelResponse>()
+            .Map(dest => dest.DeleteBlockedReason,
+                src => src.Vehicles.Any() ? DeleteBlockedReasons.VehicleModelInUse : null);
+
+        config.NewConfig<Category, CategoryResponse>()
+            .Map(dest => dest.DeleteBlockedReason,
+                src => src.Vehicles.Any() ? DeleteBlockedReasons.CategoryInUse : null);
+
+        config.NewConfig<FuelType, FuelTypeResponse>()
+            .Map(dest => dest.DeleteBlockedReason,
+                src => src.Vehicles.Any() ? DeleteBlockedReasons.FuelTypeInUse : null);
+
+        config.NewConfig<TransmissionType, TransmissionTypeResponse>()
+            .Map(dest => dest.DeleteBlockedReason,
+                src => src.Vehicles.Any() ? DeleteBlockedReasons.TransmissionTypeInUse : null);
+
+        config.NewConfig<Equipment, EquipmentResponse>()
+            .Map(dest => dest.DeleteBlockedReason,
+                src => src.ReservationItems.Any() ? DeleteBlockedReasons.EquipmentInUse : null);
 
         // Kao kod vozila: iz baze se čita samo da li slika profila postoji.
         config.NewConfig<User, UserResponse>()

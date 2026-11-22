@@ -32,4 +32,7 @@ public class VehicleResponse
     // Iz recenzija završenih najmova; null dok vozilo nema nijednu recenziju.
     public double? AverageRating { get; set; }
     public int ReviewCount { get; set; }
+
+    // null = zapis se može obrisati.
+    public string? DeleteBlockedReason { get; set; }
 }

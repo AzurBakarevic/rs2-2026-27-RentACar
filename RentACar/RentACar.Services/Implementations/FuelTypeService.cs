@@ -6,6 +6,7 @@ using RentACar.Model.Requests;
 using RentACar.Model.Responses;
 using RentACar.Model.SearchObjects;
 using RentACar.Services.Database;
+using RentACar.Services.Helpers;
 using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.Implementations;
@@ -41,7 +42,7 @@ public class FuelTypeService
     {
         if (await _dbContext.Vehicles.AnyAsync(x => x.FuelTypeId == entity.Id))
         {
-            throw new ClientException("Vrsta goriva se ne može obrisati jer je koriste vozila.");
+            throw new ClientException(DeleteBlockedReasons.FuelTypeInUse);
         }
     }
 
