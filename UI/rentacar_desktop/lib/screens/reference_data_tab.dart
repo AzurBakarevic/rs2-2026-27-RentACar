@@ -32,6 +32,7 @@ class ReferenceDataTab<T extends NamedEntity> extends StatelessWidget {
     this.extraColumns = const [],
     this.extraCells,
     this.openForm,
+    this.newBlockedReason,
   });
 
   final BaseProvider<T> provider;
@@ -43,6 +44,9 @@ class ReferenceDataTab<T extends NamedEntity> extends StatelessWidget {
 
   /// Vlastita forma; bez nje se otvara forma sa samo nazivom.
   final Future<bool> Function(BuildContext context, T? item)? openForm;
+
+  /// Preduslovi za novi zapis (npr. marka za model).
+  final Future<String?> Function()? newBlockedReason;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +66,8 @@ class ReferenceDataTab<T extends NamedEntity> extends StatelessWidget {
       ],
       cells: (item) => [Text(item.name), ...?extraCells?.call(item)],
       openForm: openForm ?? _openNameForm,
+      newBlockedReason: newBlockedReason,
+      deleteBlockedReason: (item) => item.deleteBlockedReason,
       padding: const EdgeInsets.fromLTRB(0, 32, 0, 24),
     );
   }

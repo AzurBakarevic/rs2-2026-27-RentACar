@@ -47,6 +47,7 @@ class EquipmentScreen extends StatelessWidget {
           StatusBadge(active: item.isActive, activeLabel: 'Aktivna', inactiveLabel: 'Neaktivna'),
         ],
         openForm: _openForm,
+        deleteBlockedReason: (item) => item.deleteBlockedReason,
       ),
     );
   }

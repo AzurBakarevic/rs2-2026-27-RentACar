@@ -9,6 +9,7 @@ class SearchToolbar extends StatelessWidget {
     required this.onChanged,
     required this.newLabel,
     required this.onNew,
+    this.newBlockedReason,
     this.filters = const [],
   });
 
@@ -17,6 +18,9 @@ class SearchToolbar extends StatelessWidget {
   final ValueChanged<String> onChanged;
   final String newLabel;
   final VoidCallback onNew;
+
+  /// Kad je zadan, dugme za novi zapis je onemogućeno, a razlog se prikazuje kad se pređe mišem preko njega.
+  final String? newBlockedReason;
 
   /// Dodatni filteri lijevo od pretrage (npr. datum kod servisa vozila).
   final List<Widget> filters;
@@ -43,7 +47,10 @@ class SearchToolbar extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 16),
-        FilledButton(onPressed: onNew, child: Text(newLabel)),
+        if (newBlockedReason == null)
+          FilledButton(onPressed: onNew, child: Text(newLabel))
+        else
+          Tooltip(message: newBlockedReason, child: FilledButton(onPressed: null, child: Text(newLabel))),
       ],
     );
   }

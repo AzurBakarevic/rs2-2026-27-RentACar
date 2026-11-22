@@ -7,6 +7,7 @@ using RentACar.Model.Requests;
 using RentACar.Model.Responses;
 using RentACar.Model.SearchObjects;
 using RentACar.Services.Database;
+using RentACar.Services.Helpers;
 using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.Implementations;
@@ -59,7 +60,7 @@ public class EquipmentService
     {
         if (await _dbContext.ReservationEquipment.AnyAsync(x => x.EquipmentId == entity.Id))
         {
-            throw new ClientException("Oprema se ne može obrisati jer je korištena u rezervacijama. Umjesto brisanja je deaktivirajte.");
+            throw new ClientException(DeleteBlockedReasons.EquipmentInUse);
         }
     }
 

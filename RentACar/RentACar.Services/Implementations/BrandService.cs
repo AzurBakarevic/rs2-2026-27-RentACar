@@ -6,6 +6,7 @@ using RentACar.Model.Requests;
 using RentACar.Model.Responses;
 using RentACar.Model.SearchObjects;
 using RentACar.Services.Database;
+using RentACar.Services.Helpers;
 using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.Implementations;
@@ -41,7 +42,7 @@ public class BrandService
     {
         if (await _dbContext.VehicleModels.AnyAsync(x => x.BrandId == entity.Id))
         {
-            throw new ClientException("Marka se ne može obrisati jer ima modele.");
+            throw new ClientException(DeleteBlockedReasons.BrandHasModels);
         }
     }
 

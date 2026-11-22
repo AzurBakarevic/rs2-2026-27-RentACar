@@ -25,6 +25,7 @@ class ReferenceDataScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brandProvider = context.read<BrandProvider>();
     return MasterScreen(
       title: title,
       child: DefaultTabController(
@@ -71,6 +72,8 @@ class ReferenceDataScreen extends StatelessWidget {
                       extraColumns: const ['Marka'],
                       extraCells: (model) => [Text(model.brandName)],
                       openForm: _openModelForm,
+                      newBlockedReason: () async =>
+                          await brandProvider.hasAny() ? null : 'Prvo dodajte marku u kartici Marke.',
                     ),
                     ReferenceDataTab<Category>(
                       provider: context.read<CategoryProvider>(),

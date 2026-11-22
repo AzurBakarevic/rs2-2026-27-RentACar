@@ -8,4 +8,7 @@ public class VehicleModelResponse
 
     // Mapster ga puni iz Brand.Name (spajanje naziva navigacije i svojstva).
     public string BrandName { get; set; } = string.Empty;
+
+    // null = zapis se može obrisati.
+    public string? DeleteBlockedReason { get; set; }
 }

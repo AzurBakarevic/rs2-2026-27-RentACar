@@ -6,6 +6,7 @@ using RentACar.Model.Requests;
 using RentACar.Model.Responses;
 using RentACar.Model.SearchObjects;
 using RentACar.Services.Database;
+using RentACar.Services.Helpers;
 using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.Implementations;
@@ -48,7 +49,7 @@ public class VehicleModelService
     {
         if (await _dbContext.Vehicles.AnyAsync(x => x.VehicleModelId == entity.Id))
         {
-            throw new ClientException("Model se ne može obrisati jer ga koriste vozila.");
+            throw new ClientException(DeleteBlockedReasons.VehicleModelInUse);
         }
     }
 

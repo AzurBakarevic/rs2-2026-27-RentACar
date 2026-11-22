@@ -132,7 +132,7 @@ public class VehicleService
     {
         if (await _dbContext.Reservations.AnyAsync(x => x.VehicleId == entity.Id))
         {
-            throw new ClientException("Vozilo se ne može obrisati jer ima rezervacije. Umjesto brisanja ga deaktivirajte.");
+            throw new ClientException(DeleteBlockedReasons.VehicleHasReservations);
         }
     }
 

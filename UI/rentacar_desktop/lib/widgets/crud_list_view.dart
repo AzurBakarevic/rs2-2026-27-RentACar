@@ -40,9 +40,12 @@ class CrudListView<T> extends StatefulWidget {
     required this.columns,
     required this.cells,
     required this.openForm,
+    this.newBlockedReason,
+    this.deleteBlockedReason,
     this.searchKey = 'name',
     this.extraFilter = const {},
     this.filters = const [],
+    this.onClearFilters,
     this.padding = const EdgeInsets.fromLTRB(32, 32, 32, 24),
   });
 
@@ -58,6 +61,12 @@ class CrudListView<T> extends StatefulWidget {
   /// Otvara formu za novi zapis (`null`) ili izmjenu; vraća `true` ako je zapis sačuvan.
   final Future<bool> Function(BuildContext context, T? item) openForm;
 
+  /// Preduslovi za novi zapis: vraća razlog zbog kojeg se forma ne može otvoriti ili `null` (upute 6).
+  final Future<String?> Function()? newBlockedReason;
+
+  /// Razlog zbog kojeg se zapis ne može obrisati ili `null` (upute 6).
+  final String? Function(T item)? deleteBlockedReason;
+
   /// Parametar API-ja za tekst iz pretrage (npr. `name` ili `text`).
   final String searchKey;
 
@@ -66,6 +75,9 @@ class CrudListView<T> extends StatefulWidget {
 
   /// Polja za [extraFilter], prikazana lijevo od pretrage.
   final List<Widget> filters;
+
+  /// Prazni [extraFilter]; poziva se poslije dodavanja, da novi zapis ne ostane skriven iza filtera.
+  final VoidCallback? onClearFilters;
 
   final EdgeInsets padding;
 
@@ -76,12 +88,16 @@ class CrudListView<T> extends StatefulWidget {
 class _CrudListViewState<T> extends State<CrudListView<T>> {
   late final PagedListController<T> _controller = PagedListController<T>(widget.provider);
   final _searchController = TextEditingController();
+  final _scrollController = ScrollController();
   Timer? _searchDebounce;
+  String? _newBlockedReason;
+  bool _isCreating = false;
 
   @override
   void initState() {
     super.initState();
     _controller.search(_buildFilter());
+    _checkPrerequisites();
   }
 
   @override
@@ -96,6 +112,7 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
   void dispose() {
     _searchDebounce?.cancel();
     _searchController.dispose();
+    _scrollController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -103,6 +120,7 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
   Map<String, dynamic> _buildFilter() => {
         ...widget.extraFilter,
         widget.searchKey: _searchController.text.trim(),
+        'newestFirst': true,
       };
 
   bool get _isFiltered =>
@@ -122,18 +140,24 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
               hintText: widget.labels.searchHint,
               onChanged: _onSearchChanged,
               newLabel: widget.labels.newItem,
-              onNew: () => _edit(null),
+              onNew: _create,
+              newBlockedReason: _newBlockedReason,
               filters: widget.filters,
             ),
             const SizedBox(height: 32),
             Flexible(
               child: DataTableCard(
+                scrollController: _scrollController,
                 columns: [...widget.columns, const TableColumnDef('Akcije')],
                 rows: [
                   for (final item in _controller.items)
                     [
                       ...widget.cells(item),
-                      TableActionButtons(onEdit: () => _edit(item), onDelete: () => _delete(item)),
+                      TableActionButtons(
+                        onEdit: () => _edit(item),
+                        onDelete: () => _delete(item),
+                        deleteBlockedReason: widget.deleteBlockedReason?.call(item),
+                      ),
                     ],
                 ],
                 isLoading: _controller.isLoading,
@@ -161,9 +185,46 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
     });
   }
 
+  Future<void> _checkPrerequisites() async {
+    try {
+      final reason = await widget.newBlockedReason?.call();
+      if (mounted) {
+        setState(() => _newBlockedReason = reason);
+      }
+    } on ApiClientException catch (e) {
+      // Dugme ostaje aktivno; preduslovi se ponovo provjeravaju na klik, pa se tada prikazuje i greška.
+      debugPrint('Provjera preduslova za ${widget.provider.endpoint} nije uspjela: $e');
+    }
+  }
+
+  // Dok traje provjera preduslova, drugi klik ne otvara još jednu formu.
+  Future<void> _create() async {
+    if (_isCreating) {
+      return;
+    }
+    _isCreating = true;
+    try {
+      await _edit(null);
+    } finally {
+      _isCreating = false;
+    }
+  }
+
   Future<void> _edit(T? item) async {
     bool saved;
     try {
+      if (item == null) {
+        // Ponovo, jer je preduslov mogao biti obrisan otkad je lista otvorena.
+        final reason = await widget.newBlockedReason?.call();
+        if (!mounted) {
+          return;
+        }
+        if (reason != null) {
+          setState(() => _newBlockedReason = reason);
+          await alertBox(context, 'Unos nije moguć', reason);
+          return;
+        }
+      }
       saved = await widget.openForm(context, item);
     } on UnauthorizedException {
       return;
@@ -177,7 +238,26 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
 
     if (saved && mounted) {
       showSnack(context, widget.labels.saved);
-      _controller.load();
+      if (item == null) {
+        _showNewest();
+      } else {
+        _controller.load();
+      }
+    }
+  }
+
+  // Novi zapis je prvi red prve stranice, pa se poništava sve što bi ga sakrilo (upute 6).
+  void _showNewest() {
+    _searchDebounce?.cancel();
+    _searchController.clear();
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+    if (widget.extraFilter.isNotEmpty && widget.onClearFilters != null) {
+      // Listu učitava didUpdateWidget, kad ekran vrati prazan filter.
+      widget.onClearFilters!();
+    } else {
+      _controller.search(_buildFilter());
     }
   }
 
@@ -204,6 +284,8 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
       return;
     } on ApiClientException catch (e) {
       if (mounted) {
+        // Zapis je u međuvremenu iskorišten ili obrisan, pa red više nije tačan.
+        _controller.load();
         await alertBox(context, 'Brisanje nije moguće', e.message);
       }
     }

@@ -52,7 +52,9 @@ public abstract class BaseReadService<TEntity, TResponse, TSearch> : IBaseReadSe
         var pageSize = Math.Clamp(search.PageSize ?? BaseSearchObject.DefaultPageSize, 1, BaseSearchObject.MaxPageSize);
         var skip = (int)Math.Min((long)(page - 1) * pageSize, int.MaxValue);
 
-        var items = await ApplyOrdering(query)
+        var orderedQuery = search.NewestFirst == true ? query.OrderByDescending(x => x.Id) : ApplyOrdering(query);
+
+        var items = await orderedQuery
             .Skip(skip)
             .Take(pageSize)
             .ProjectToType<TResponse>(_mapper.Config)

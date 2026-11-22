@@ -10,8 +10,10 @@ class TransmissionType implements NamedEntity {
   final int id;
   @override
   final String name;
+  @override
+  final String? deleteBlockedReason;
 
-  TransmissionType({required this.id, required this.name});
+  TransmissionType({required this.id, required this.name, this.deleteBlockedReason});
 
   factory TransmissionType.fromJson(Map<String, dynamic> json) => _$TransmissionTypeFromJson(json);
 

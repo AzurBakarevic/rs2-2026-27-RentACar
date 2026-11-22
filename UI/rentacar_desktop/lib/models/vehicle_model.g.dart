@@ -11,6 +11,7 @@ VehicleModel _$VehicleModelFromJson(Map<String, dynamic> json) => VehicleModel(
   name: json['name'] as String,
   brandId: (json['brandId'] as num).toInt(),
   brandName: json['brandName'] as String,
+  deleteBlockedReason: json['deleteBlockedReason'] as String?,
 );
 
 Map<String, dynamic> _$VehicleModelToJson(VehicleModel instance) =>
@@ -19,4 +20,5 @@ Map<String, dynamic> _$VehicleModelToJson(VehicleModel instance) =>
       'name': instance.name,
       'brandId': instance.brandId,
       'brandName': instance.brandName,
+      'deleteBlockedReason': instance.deleteBlockedReason,
     };
