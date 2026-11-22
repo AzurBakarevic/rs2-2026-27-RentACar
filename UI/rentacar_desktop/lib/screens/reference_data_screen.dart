@@ -14,6 +14,7 @@ import '../providers/fuel_type_provider.dart';
 import '../providers/transmission_type_provider.dart';
 import '../providers/vehicle_model_provider.dart';
 import '../utils/app_theme.dart';
+import '../widgets/field_with_add_button.dart';
 import 'reference_data_dialog.dart';
 import 'reference_data_tab.dart';
 
@@ -137,17 +138,7 @@ class ReferenceDataScreen extends StatelessWidget {
       context,
       title: model == null ? 'Novi model' : 'Izmjena modela',
       initialValue: {'name': model?.name ?? '', 'brandId': model?.brandId},
-      extraFields: [
-        FormBuilderDropdown<int>(
-          name: 'brandId',
-          decoration: const InputDecoration(labelText: 'Marka'),
-          dropdownColor: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          iconEnabledColor: AppColors.textMuted,
-          items: brandItems,
-          validator: (value) => value == null ? 'Marka je obavezna.' : null,
-        ),
-      ],
+      extraFields: [_BrandField(items: brandItems)],
       onSave: (values) async {
         if (model == null) {
           await modelProvider.insert(values);
@@ -156,5 +147,58 @@ class ReferenceDataScreen extends StatelessWidget {
         }
       },
     );
+  }
+}
+
+/// Marka u formi modela, uz dodavanje nove marke.
+class _BrandField extends StatefulWidget {
+  const _BrandField({required this.items});
+
+  final List<DropdownMenuItem<int>> items;
+
+  @override
+  State<_BrandField> createState() => _BrandFieldState();
+}
+
+class _BrandFieldState extends State<_BrandField> {
+  late List<DropdownMenuItem<int>> _items = widget.items;
+  bool _brandAdded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return FieldWithAddButton(
+      tooltip: 'Nova marka',
+      onAdd: _addBrand,
+      field: FormBuilderDropdown<int>(
+        name: 'brandId',
+        // Potvrda je u formi, jer bi poruka na dnu ekrana ostala iza dijaloga.
+        decoration: InputDecoration(
+          labelText: 'Marka',
+          helperText: _brandAdded ? 'Marka je sačuvana.' : null,
+          helperStyle: const TextStyle(color: AppColors.success),
+        ),
+        dropdownColor: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        iconEnabledColor: AppColors.textMuted,
+        items: _items,
+        validator: (value) => value == null ? 'Marka je obavezna.' : null,
+      ),
+    );
+  }
+
+  Future<void> _addBrand() async {
+    final brand = await showNewBrandDialog(context);
+    if (brand == null || !mounted) {
+      return;
+    }
+    setState(() {
+      _items = [DropdownMenuItem<int>(value: brand.id, child: Text(brand.name)), ..._items];
+      _brandAdded = true;
+    });
+    // Promjena liste vraća polje na početnu vrijednost, pa se nova marka bira tek poslije nje.
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted) {
+      FormBuilder.of(context)?.fields['brandId']?.didChange(brand.id);
+    }
   }
 }
