@@ -133,9 +133,14 @@ class DataTableCard extends StatelessWidget {
   }
 
   Widget _buildMessage(Widget child) {
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Center(child: child),
+    // U sredini slobodnog prostora, a poruka viša od njega se pomjera.
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.hasBoundedHeight ? constraints.maxHeight : 0),
+          child: Center(child: Padding(padding: const EdgeInsets.all(32), child: child)),
+        ),
+      ),
     );
   }
 }

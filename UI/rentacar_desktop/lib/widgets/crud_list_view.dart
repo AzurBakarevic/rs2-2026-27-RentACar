@@ -8,6 +8,7 @@ import '../utils/api_client_exception.dart';
 import '../utils/paged_list_controller.dart';
 import '../utils/utils_widgets.dart';
 import 'data_table_card.dart';
+import 'paged_table_layout.dart';
 import 'pagination_bar.dart';
 import 'search_toolbar.dart';
 import 'table_action_buttons.dart';
@@ -128,51 +129,42 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: widget.padding,
-      child: ListenableBuilder(
-        listenable: _controller,
-        builder: (context, _) => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SearchToolbar(
-              controller: _searchController,
-              hintText: widget.labels.searchHint,
-              onChanged: _onSearchChanged,
-              newLabel: widget.labels.newItem,
-              onNew: _create,
-              newBlockedReason: _newBlockedReason,
-              filters: widget.filters,
-            ),
-            const SizedBox(height: 32),
-            Flexible(
-              child: DataTableCard(
-                scrollController: _scrollController,
-                columns: [...widget.columns, const TableColumnDef('Akcije')],
-                rows: [
-                  for (final item in _controller.items)
-                    [
-                      ...widget.cells(item),
-                      TableActionButtons(
-                        onEdit: () => _edit(item),
-                        onDelete: () => _delete(item),
-                        deleteBlockedReason: widget.deleteBlockedReason?.call(item),
-                      ),
-                    ],
-                ],
-                isLoading: _controller.isLoading,
-                error: _controller.error,
-                onRetry: _controller.load,
-                emptyText: _isFiltered ? 'Nema zapisa koji odgovaraju pretrazi.' : 'Nema zapisa.',
-              ),
-            ),
-            const SizedBox(height: 32),
-            PaginationBar(
-              page: _controller.page,
-              pageCount: _controller.pageCount,
-              onPageChanged: _controller.goToPage,
-            ),
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, _) => PagedTableLayout(
+        padding: widget.padding,
+        toolbar: SearchToolbar(
+          controller: _searchController,
+          hintText: widget.labels.searchHint,
+          onChanged: _onSearchChanged,
+          newLabel: widget.labels.newItem,
+          onNew: _create,
+          newBlockedReason: _newBlockedReason,
+          filters: widget.filters,
+        ),
+        table: DataTableCard(
+          scrollController: _scrollController,
+          columns: [...widget.columns, const TableColumnDef('Akcije')],
+          rows: [
+            for (final item in _controller.items)
+              [
+                ...widget.cells(item),
+                TableActionButtons(
+                  onEdit: () => _edit(item),
+                  onDelete: () => _delete(item),
+                  deleteBlockedReason: widget.deleteBlockedReason?.call(item),
+                ),
+              ],
           ],
+          isLoading: _controller.isLoading,
+          error: _controller.error,
+          onRetry: _controller.load,
+          emptyText: _isFiltered ? 'Nema zapisa koji odgovaraju pretrazi.' : 'Nema zapisa.',
+        ),
+        pagination: PaginationBar(
+          page: _controller.page,
+          pageCount: _controller.pageCount,
+          onPageChanged: _controller.goToPage,
         ),
       ),
     );
