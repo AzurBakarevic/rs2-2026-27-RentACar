@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:material_ui/material_ui.dart';
 
-/// Raspored tabelarnog ekrana: pretraga, tabela i paginacija. U niskom prozoru se cijeli dio pomjera okomito.
 class PagedTableLayout extends StatelessWidget {
   const PagedTableLayout({
     super.key,
@@ -17,12 +16,10 @@ class PagedTableLayout extends StatelessWidget {
   final Widget pagination;
   final EdgeInsets padding;
 
-  // Dovoljno za pretragu, zaglavlje, red-dva tabele i paginaciju.
   static const double _minHeight = 440;
 
   @override
   Widget build(BuildContext context) {
-    // Stablo je isto u svakoj visini, da promjena veličine prozora ne isprazni pretragu.
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         child: SizedBox(

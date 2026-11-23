@@ -12,7 +12,6 @@ import '../utils/utils_widgets.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key, this.message});
 
-  /// Poruka iznad forme, npr. kad je sesija istekla.
   final String? message;
 
   @override
@@ -79,7 +78,6 @@ class _LoginScreenState extends State<LoginScreen> {
             style: TextStyle(fontSize: 16, color: AppColors.textMuted),
           ),
           const SizedBox(height: 32),
-          // Poruka je uvijek na istom mjestu u listi, inače bi se polja napravila iznova i izgubila fokus.
           _buildNotice(),
           FormBuilderTextField(
             name: 'username',
@@ -116,7 +114,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Greška prijave ima prednost nad porukom s kojom je ekran otvoren (npr. istekla sesija).
   Widget _buildNotice() {
     final text = _error ?? widget.message;
     if (text == null) {
@@ -135,7 +132,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    // Polja ostaju omogućena (da ne izgube fokus), pa se dvostruko slanje sprečava ovdje.
     if (_isLoading) {
       return;
     }

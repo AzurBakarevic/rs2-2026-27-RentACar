@@ -14,8 +14,6 @@ import '../widgets/data_table_card.dart';
 import '../widgets/form_dialog.dart';
 import '../widgets/status_badge.dart';
 
-/// Sezonske cijene (prijava: „Upravljanje sezonskim cijenama”): periodi u kojima se cijena najma
-/// uvećava za zadani procenat. Preklapanje dviju aktivnih sezona odbija backend.
 class SeasonalPriceScreen extends StatelessWidget {
   const SeasonalPriceScreen({super.key});
 
@@ -141,7 +139,6 @@ class SeasonalPriceScreen extends StatelessWidget {
     );
   }
 
-  // Samo datum; oba datuma su uključena u period (od 20.12. do 05.01.).
   static Widget _dateField({
     required String name,
     required String label,

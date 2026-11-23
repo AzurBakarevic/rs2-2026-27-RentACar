@@ -2,9 +2,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.WebAPI.BackgroundServices;
 
-// Svake minute otkazuje rezervacije koje nisu plaćene u roku od 15 minuta i šalje podsjetnike dan prije preuzimanja
-// (prijava). Pozadinski posao kroz BackgroundService (upute 8.2); svaki krug dobija svoj scope (DbContext).
-// Ovo nije worker iz upute 3.2 (RabbitMQ i e-mail), koji je poseban projekat RentACar.Worker.
 public class ReservationJobsBackgroundService : BackgroundService
 {
     private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
@@ -45,7 +42,6 @@ public class ReservationJobsBackgroundService : BackgroundService
                     expired, reminders);
             }
         }
-        // Greška jednog kruga (npr. baza trenutno nije dostupna) ne gasi posao: zapisuje se, a za minutu se pokušava ponovo.
         catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
         {
             _logger.LogError(ex, "Reservation jobs failed; retrying in {Interval}.", Interval);

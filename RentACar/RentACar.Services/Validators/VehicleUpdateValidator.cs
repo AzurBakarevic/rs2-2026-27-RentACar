@@ -14,7 +14,6 @@ public class VehicleUpdateValidator : AbstractValidator<VehicleUpdateRequest>
             .MaximumLength(20).WithMessage("Registracija može imati najviše 20 znakova.")
             .Matches("^[A-Za-z0-9 -]+$").WithMessage("Registracija smije sadržavati samo slova bez kvačica, brojeve, razmak i crticu.");
 
-        // Najviše sljedeća godina (modeli koji se prodaju unaprijed).
         RuleFor(x => x.ProductionYear)
             .InclusiveBetween(MinProductionYear, DateTime.UtcNow.Year + 1)
             .WithMessage($"Godina proizvodnje mora biti između {MinProductionYear} i {DateTime.UtcNow.Year + 1}.");

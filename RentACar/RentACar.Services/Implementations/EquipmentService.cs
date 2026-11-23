@@ -28,7 +28,6 @@ public class EquipmentService
         _authenticatedUser = authenticatedUser;
     }
 
-    // Neaktivna oprema se ne nudi prilikom rezervacije, pa je korisnik ne vidi; administrator vidi svu.
     protected override IQueryable<Equipment> GetQuery()
     {
         var query = base.GetQuery();

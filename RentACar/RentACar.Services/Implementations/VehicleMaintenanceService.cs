@@ -38,7 +38,6 @@ public class VehicleMaintenanceService
             query = query.Where(x => x.VehicleId == search.VehicleId.Value);
         }
 
-        // Servis koji bar dijelom pada u traženi period: završava poslije njegovog početka i počinje prije njegovog kraja.
         if (search.From.HasValue)
         {
             query = query.Where(x => x.EndAt > search.From.Value);
@@ -52,7 +51,6 @@ public class VehicleMaintenanceService
         return query;
     }
 
-    // Najnoviji servisi prvi.
     protected override IQueryable<VehicleMaintenance> ApplyOrdering(IQueryable<VehicleMaintenance> query)
         => query.OrderByDescending(x => x.StartAt).ThenByDescending(x => x.Id);
 
@@ -69,7 +67,6 @@ public class VehicleMaintenanceService
             throw new ClientException("Odabrano vozilo ne postoji.");
         }
 
-        // Prijava: sistem ne dozvoljava servis koji se preklapa s postojećom (aktivnom) rezervacijom tog vozila.
         if (await _dbContext.Reservations.AnyAsync(x => x.VehicleId == entity.VehicleId
                                                        && ReservationStatuses.Active.Contains(x.Status)
                                                        && x.PickupAt < entity.EndAt

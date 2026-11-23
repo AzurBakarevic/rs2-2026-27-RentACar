@@ -7,7 +7,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Evidencija servisa je samo za administratora; korisnik vidi samo posljedicu (vozilo nije slobodno u tom periodu).
 [Authorize(Roles = RoleNames.Administrator)]
 public class VehicleMaintenancesController
     : BaseCRUDController<VehicleMaintenanceResponse, VehicleMaintenanceSearchObject, VehicleMaintenanceInsertRequest,

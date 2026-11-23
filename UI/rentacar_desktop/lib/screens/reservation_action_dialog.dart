@@ -9,11 +9,8 @@ import '../utils/formatters.dart';
 import '../utils/utils_widgets.dart';
 import '../widgets/form_dialog.dart';
 
-// Ista granica kao na backendu (ReservationReasonRules).
 const int _maxReasonLength = 300;
 
-/// Potvrda akcije nad rezervacijom (upute 6), uz razlog kod odbijanja i otkazivanja (prijava).
-/// Vraća `true` ako je akcija izvršena.
 Future<bool> showReservationActionDialog(BuildContext context, Reservation reservation, ReservationAction action) {
   final provider = context.read<ReservationProvider>();
   final (title, confirmLabel, question, consequence) = switch (action) {
@@ -80,7 +77,6 @@ Future<bool> showReservationActionDialog(BuildContext context, Reservation reser
   );
 }
 
-/// Poruka poslije uspješne akcije.
 String reservationActionDone(ReservationAction action) => switch (action) {
       ReservationAction.confirm => 'Rezervacija je potvrđena.',
       ReservationAction.reject => 'Rezervacija je odbijena.',

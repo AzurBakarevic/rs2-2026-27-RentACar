@@ -16,7 +16,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.PasswordSalt).IsRequired().HasMaxLength(200);
         builder.Property(x => x.DriverLicenseNumber).HasMaxLength(30);
 
-        // Obrisani (soft delete) nalog ne blokira ponovnu registraciju istog e-maila ili korisničkog imena.
         builder.HasIndex(x => x.Email).IsUnique().HasFilter("[IsDeleted] = 0");
         builder.HasIndex(x => x.Username).IsUnique().HasFilter("[IsDeleted] = 0");
 

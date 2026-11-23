@@ -4,8 +4,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.Implementations;
 
-// Hash lozinke: PBKDF2-SHA256 sa slučajnim saltom (upute A.3). Kao profesorov CryptoService, ali
-// salt dolazi iz RandomNumberGenerator (RNGCryptoServiceProvider je zastario), a poređenje je u konstantnom vremenu.
 public class CryptoService : ICryptoService
 {
     private const int SaltSize = 16;

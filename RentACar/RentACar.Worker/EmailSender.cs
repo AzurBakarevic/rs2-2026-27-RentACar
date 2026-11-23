@@ -7,8 +7,6 @@ using RentACar.Model.Messaging;
 
 namespace RentACar.Worker;
 
-// Šalje e-mail preko SMTP servera iz .env-a. Za svaki e-mail otvara novu SMTP konekciju; e-mailova je malo,
-// a tako prekinuta konekcija ne utiče na sljedeći e-mail.
 public class EmailSender
 {
     private const string SenderName = "RentACar";
@@ -43,7 +41,6 @@ public class EmailSender
         await client.DisconnectAsync(quit: true, cancellationToken);
     }
 
-    // Port 465 je šifrovan od početka; ostali (npr. 587 kod Gmail-a) prelaze na šifrovanje komandom STARTTLS.
     private SecureSocketOptions GetSocketOptions()
     {
         if (!_settings.UseSsl)

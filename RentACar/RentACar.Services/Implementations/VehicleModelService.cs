@@ -62,7 +62,6 @@ public class VehicleModelService
             throw new ClientException("Odabrana marka ne postoji.");
         }
 
-        // Isti naziv smije postojati kod različitih marki, ali ne dvaput kod iste (unique indeks BrandId + Name).
         if (await _dbContext.VehicleModels.AnyAsync(
                 x => x.BrandId == entity.BrandId && x.Name == entity.Name && x.Id != entity.Id))
         {

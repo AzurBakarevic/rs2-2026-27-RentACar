@@ -10,19 +10,15 @@ using RentACar.Model.Exceptions;
 
 namespace RentACar.WebAPI.Filters;
 
-// Pretvara izuzetke iz kontrolera i servisa u HTTP odgovor. Svaka greška ima isti oblik (kao kod profesora):
-// { "message": "prva poruka", "errors": { "Name": ["..."] } } ili { ..., "errors": { "clientError": ["..."] } }
 public class ExceptionFilter : ExceptionFilterAttribute
 {
     private const string ClientErrorKey = "clientError";
     private const string ServerErrorKey = "serverError";
 
-    // Brojevi grešaka SQL Servera: dupla vrijednost u unique indeksu i kršenje FK veze.
     private const int SqlUniqueIndexViolation = 2601;
     private const int SqlUniqueConstraintViolation = 2627;
     private const int SqlForeignKeyViolation = 547;
 
-    // Za odgovore koji se pišu direktno (401/403 iz JWT provjere): č, ć, š, ž, đ se ne escapuju, kao u ObjectResult-u.
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
@@ -63,7 +59,6 @@ public class ExceptionFilter : ExceptionFilterAttribute
                 _logger.LogInformation("{Message} ({Method} {Path})", context.Exception.Message, request.Method, request.Path);
                 break;
 
-            // Stripe nije dostupan ili je odbio zahtjev servera; promjena nije spremljena, pa se može pokušati ponovo.
             case PaymentGatewayException gatewayException:
                 context.ModelState.AddModelError(ServerErrorKey, gatewayException.Message);
                 status = StatusCodes.Status503ServiceUnavailable;
@@ -76,7 +71,6 @@ public class ExceptionFilter : ExceptionFilterAttribute
                 _logger.LogWarning("Unauthorized access on {Method} {Path}.", request.Method, request.Path);
                 break;
 
-            // Rezerva ako dva zahtjeva u isto vrijeme prođu provjeru u servisu, pa baza odbije drugi.
             case DbUpdateException { InnerException: SqlException sql }
                 when sql.Number is SqlUniqueIndexViolation or SqlUniqueConstraintViolation:
                 context.ModelState.AddModelError(ClientErrorKey, "Zapis s ovim podacima već postoji.");
@@ -103,8 +97,6 @@ public class ExceptionFilter : ExceptionFilterAttribute
         context.ExceptionHandled = true;
     }
 
-    // Za neispravan zahtjev koji ne dođe do akcije (loš JSON, pogrešan tip vrijednosti): isti oblik greške,
-    // bez tehničkih poruka parsera, koje se samo zapisuju u log.
     public static IActionResult InvalidModelState(ActionContext context)
     {
         var request = context.HttpContext.Request;
@@ -112,7 +104,6 @@ public class ExceptionFilter : ExceptionFilterAttribute
         logger.LogWarning("Invalid request on {Method} {Path}: {Errors}", request.Method, request.Path,
             string.Join(" | ", context.ModelState.SelectMany(x => x.Value!.Errors.Select(e => $"{x.Key}: {e.ErrorMessage}"))));
 
-        // Tijelo veće od dozvoljenog (npr. prevelika slika na uploadu): server ga ni ne čita, pa je to 413, a ne loš format.
         var maxBodySize = context.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>()?.MaxRequestBodySize;
         if (request.ContentLength > maxBodySize)
         {
@@ -128,7 +119,6 @@ public class ExceptionFilter : ExceptionFilterAttribute
         });
     }
 
-    // Isti oblik greške za odgovore koji ne prolaze kroz MVC (npr. 401 i 403 iz JWT autentifikacije).
     public static Task WriteErrorAsync(HttpResponse response, int status, string message)
     {
         response.StatusCode = status;
@@ -137,7 +127,6 @@ public class ExceptionFilter : ExceptionFilterAttribute
         return response.WriteAsJsonAsync(new { message, errors }, JsonOptions);
     }
 
-    // ObjectResult (a ne JsonResult) ide kroz isti JSON formatter kao uspješni odgovori, pa se č, ć, š, ž, đ ne escapuju.
     private static ObjectResult CreateResult(int status, Dictionary<string, List<string>> errors)
     {
         var message = errors.Values.SelectMany(x => x).FirstOrDefault() ?? "Zahtjev nije moguće obraditi.";

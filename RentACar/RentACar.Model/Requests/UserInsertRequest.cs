@@ -1,6 +1,5 @@
 namespace RentACar.Model.Requests;
 
-// Administrator dodaje korisnika (desktop): bira ulogu i status.
 public class UserInsertRequest : IUserDetails
 {
     public string FirstName { get; set; } = string.Empty;

@@ -15,8 +15,6 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 
         builder.HasIndex(x => x.StripePaymentIntentId).IsUnique();
 
-        // Jedna rezervacija može imati najviše jedno plaćanje koje nije poništeno
-        // (otvoreno, plaćeno ili vraćeno), čime se sprječava višestruko plaćanje (upute 7.1).
         builder.HasIndex(x => x.ReservationId)
             .IsUnique()
             .HasFilter($"[Status] <> {(int)PaymentStatus.Cancelled}");

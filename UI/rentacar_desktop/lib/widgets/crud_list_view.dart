@@ -13,7 +13,6 @@ import 'pagination_bar.dart';
 import 'search_toolbar.dart';
 import 'table_action_buttons.dart';
 
-/// Tekstovi jedne liste (rod i padež se razlikuju: „Nova oprema”, „Novi servis”...).
 class CrudListLabels<T> {
   const CrudListLabels({
     required this.searchHint,
@@ -30,8 +29,6 @@ class CrudListLabels<T> {
   final String deleted;
 }
 
-/// Tabelarni pregled s pretragom, paginacijom, dodavanjem, izmjenom i brisanjem (šifarnici, vozila,
-/// oprema, servisi, sezonske cijene). Kolona „Akcije” se dodaje sama.
 class CrudListView<T> extends StatefulWidget {
   const CrudListView({
     super.key,
@@ -52,32 +49,24 @@ class CrudListView<T> extends StatefulWidget {
 
   final BaseProvider<T> provider;
 
-  /// Id zapisa za brisanje.
   final int Function(T item) idOf;
 
   final CrudListLabels<T> labels;
   final List<TableColumnDef> columns;
   final List<Widget> Function(T item) cells;
 
-  /// Otvara formu za novi zapis (`null`) ili izmjenu; vraća `true` ako je zapis sačuvan.
   final Future<bool> Function(BuildContext context, T? item) openForm;
 
-  /// Preduslovi za novi zapis: vraća razlog zbog kojeg se forma ne može otvoriti ili `null` (upute 6).
   final Future<String?> Function()? newBlockedReason;
 
-  /// Razlog zbog kojeg se zapis ne može obrisati ili `null` (upute 6).
   final String? Function(T item)? deleteBlockedReason;
 
-  /// Parametar API-ja za tekst iz pretrage (npr. `name` ili `text`).
   final String searchKey;
 
-  /// Filteri koje drži ekran (npr. datum kod servisa); promjena ponovo učitava listu od prve stranice.
   final Map<String, dynamic> extraFilter;
 
-  /// Polja za [extraFilter], prikazana lijevo od pretrage.
   final List<Widget> filters;
 
-  /// Prazni [extraFilter]; poziva se poslije dodavanja, da novi zapis ne ostane skriven iza filtera.
   final VoidCallback? onClearFilters;
 
   final EdgeInsets padding;
@@ -184,12 +173,10 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
         setState(() => _newBlockedReason = reason);
       }
     } on ApiClientException catch (e) {
-      // Dugme ostaje aktivno; preduslovi se ponovo provjeravaju na klik, pa se tada prikazuje i greška.
       debugPrint('Provjera preduslova za ${widget.provider.endpoint} nije uspjela: $e');
     }
   }
 
-  // Dok traje provjera preduslova, drugi klik ne otvara još jednu formu.
   Future<void> _create() async {
     if (_isCreating) {
       return;
@@ -206,7 +193,6 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
     bool saved;
     try {
       if (item == null) {
-        // Ponovo, jer je preduslov mogao biti obrisan otkad je lista otvorena.
         final reason = await widget.newBlockedReason?.call();
         if (!mounted) {
           return;
@@ -221,7 +207,6 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
     } on UnauthorizedException {
       return;
     } on ApiClientException catch (e) {
-      // Npr. podaci za padajuće liste forme nisu učitani.
       if (mounted) {
         await alertBox(context, 'Greška', e.message);
       }
@@ -238,7 +223,6 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
     }
   }
 
-  // Novi zapis je prvi red prve stranice, pa se poništava sve što bi ga sakrilo (upute 6).
   void _showNewest() {
     _searchDebounce?.cancel();
     _searchController.clear();
@@ -246,7 +230,6 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
       _scrollController.jumpTo(0);
     }
     if (widget.extraFilter.isNotEmpty && widget.onClearFilters != null) {
-      // Listu učitava didUpdateWidget, kad ekran vrati prazan filter.
       widget.onClearFilters!();
     } else {
       _controller.search(_buildFilter());
@@ -276,7 +259,6 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
       return;
     } on ApiClientException catch (e) {
       if (mounted) {
-        // Zapis je u međuvremenu iskorišten ili obrisan, pa red više nije tačan.
         _controller.load();
         await alertBox(context, 'Brisanje nije moguće', e.message);
       }

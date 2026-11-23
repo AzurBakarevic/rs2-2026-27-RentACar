@@ -8,8 +8,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.ReservationStateMachine;
 
-// Potvrđena: administrator je nakon vraćanja vozila označava kao završenu ili je izuzetno otkazuje,
-// a korisnik je može otkazati najkasnije 24 sata prije preuzimanja. Pri otkazivanju se uplata vraća u cijelosti.
 public class ConfirmedReservationState : BaseReservationState
 {
     private readonly ReservationPaymentHandler _paymentHandler;
@@ -21,7 +19,6 @@ public class ConfirmedReservationState : BaseReservationState
         _paymentHandler = paymentHandler;
     }
 
-    // Najam se može završiti tek kad je vozilo preuzeto; vraćanje prije dogovorenog kraja je dozvoljeno.
     public override Task CompleteAsync(Reservation reservation)
     {
         EnsureNotBlocked(ReservationBlockedReasons.Complete(reservation.PickupAt, DateTime.UtcNow));
@@ -29,9 +26,6 @@ public class ConfirmedReservationState : BaseReservationState
         return ChangeStatusAsync(reservation, ReservationStatus.Completed, null, ReservationNotifications.Completed);
     }
 
-    // Prijava: administrator izuzetno otkazuje potvrđenu rezervaciju prije preuzimanja ili u toku najma
-    // (npr. zbog kvara vozila), uz obavezan razlog (provjerava ReservationCancelValidator).
-    // U oba slučaja korisniku se vraća uplaćeni iznos (prijava).
     public override async Task CancelAsync(Reservation reservation, string? reason)
     {
         if (!IsAdministrator)

@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Polje za pretragu i dugme za novi zapis, desno iznad tabele. Bez [newLabel] nema dugmeta (npr. rezervacije).
 class SearchToolbar extends StatelessWidget {
   const SearchToolbar({
     super.key,
@@ -19,10 +18,8 @@ class SearchToolbar extends StatelessWidget {
   final String? newLabel;
   final VoidCallback? onNew;
 
-  /// Kad je zadan, dugme za novi zapis je onemogućeno, a razlog se prikazuje kad se pređe mišem preko njega.
   final String? newBlockedReason;
 
-  /// Dodatni filteri lijevo od pretrage (npr. datum kod servisa vozila).
   final List<Widget> filters;
 
   @override

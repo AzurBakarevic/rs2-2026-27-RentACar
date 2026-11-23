@@ -9,7 +9,6 @@ public class ReservationCancelValidator : AbstractValidator<ReservationCancelReq
 {
     public ReservationCancelValidator(IAuthenticatedUserAccessor authenticatedUser)
     {
-        // Prijava: unos razloga je obavezan kad otkazuje administrator; korisnik ga ne mora navesti.
         RuleFor(x => x.Reason)
             .NotEmpty().WithMessage("Razlog otkazivanja je obavezan.")
             .When(_ => authenticatedUser.IsInRole(RoleNames.Administrator));

@@ -9,7 +9,6 @@ public class UserUpdateValidator : AbstractValidator<UserUpdateRequest>
     {
         Include(new UserDetailsValidator());
 
-        // Lozinka se provjerava samo ako je administrator unese (upute 4: ne tražiti novu lozinku pri izmjeni).
         When(x => !string.IsNullOrEmpty(x.Password) || !string.IsNullOrEmpty(x.PasswordConfirm), () =>
         {
             RuleFor(x => x.Password).ValidPassword();

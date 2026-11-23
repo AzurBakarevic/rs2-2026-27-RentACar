@@ -8,9 +8,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.Implementations;
 
-// Generičko čitanje. Za razliku od profesorovog BaseReadService-a, upit ostaje IQueryable do kraja:
-// filtriranje, brojanje, sortiranje, straničenje i mapiranje (ProjectToType) izvršavaju se u bazi,
-// pa se iz baze čitaju samo redovi i kolone koji se vraćaju (upute 8.2).
 public abstract class BaseReadService<TEntity, TResponse, TSearch> : IBaseReadService<TResponse, TSearch>
     where TEntity : class, IEntity
     where TResponse : class
@@ -25,14 +22,10 @@ public abstract class BaseReadService<TEntity, TResponse, TSearch> : IBaseReadSe
         _dbContext = dbContext;
     }
 
-    // Osnovni upit nad tabelom za sve operacije; izvedeni servis ga može suziti
-    // (npr. UserService izbacuje logički obrisane korisnike).
     protected virtual IQueryable<TEntity> GetQuery() => _dbContext.Set<TEntity>();
 
-    // Uslovi iz search objekta (Where se prevodi u SQL).
     protected abstract IQueryable<TEntity> ApplyFilters(IQueryable<TEntity> query, TSearch search);
 
-    // Straničenje traži stalan redoslijed; izvedeni servis može sortirati drugačije (npr. po nazivu).
     protected virtual IQueryable<TEntity> ApplyOrdering(IQueryable<TEntity> query) => query.OrderBy(x => x.Id);
 
     public virtual async Task<PageResult<TResponse>> GetAllAsync(TSearch? search = null)
@@ -47,7 +40,6 @@ public abstract class BaseReadService<TEntity, TResponse, TSearch> : IBaseReadSe
             totalCount = await query.CountAsync();
         }
 
-        // Straničenje je uvijek uključeno; PageSize iznad MaxPageSize se svodi na MaxPageSize (upute 8.2).
         var page = Math.Max(search.Page ?? 1, 1);
         var pageSize = Math.Clamp(search.PageSize ?? BaseSearchObject.DefaultPageSize, 1, BaseSearchObject.MaxPageSize);
         var skip = (int)Math.Min((long)(page - 1) * pageSize, int.MaxValue);

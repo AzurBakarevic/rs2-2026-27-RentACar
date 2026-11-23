@@ -11,7 +11,6 @@ public class EquipmentInsertValidator : AbstractValidator<EquipmentInsertRequest
             .NotEmpty().WithMessage("Naziv je obavezan.")
             .MaximumLength(100).WithMessage("Naziv može imati najviše 100 znakova.");
 
-        // Oprema može biti i besplatna (0 KM).
         RuleFor(x => x.PricePerDay)
             .GreaterThanOrEqualTo(0).WithMessage("Cijena po danu ne može biti negativna.")
             .LessThanOrEqualTo(1000).WithMessage("Cijena po danu može biti najviše 1000 KM.")

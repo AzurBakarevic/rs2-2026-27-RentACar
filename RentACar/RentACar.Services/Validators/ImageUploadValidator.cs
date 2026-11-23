@@ -4,7 +4,6 @@ using RentACar.Services.Helpers;
 
 namespace RentACar.Services.Validators;
 
-// Upload slike (upute 5): veličina, dozvoljen MIME tip i da stvarni sadržaj (magic bytes) odgovara tom tipu.
 public class ImageUploadValidator : AbstractValidator<ImageUploadRequest>
 {
     public const int MaxSizeInBytes = 2 * 1024 * 1024;
@@ -16,7 +15,6 @@ public class ImageUploadValidator : AbstractValidator<ImageUploadRequest>
             .NotEmpty().WithMessage("Odaberite sliku.")
             .Must(content => content.Length <= MaxSizeInBytes).WithMessage("Slika može imati najviše 2 MB.");
 
-        // Provjerava se tek kad je sadržaj ispravne veličine, da se ne vrati više poruka za isti fajl.
         RuleFor(x => x.ContentType)
             .Cascade(CascadeMode.Stop)
             .Must(contentType => contentType != null && ImageFormat.AllowedContentTypes.Contains(Normalize(contentType)))

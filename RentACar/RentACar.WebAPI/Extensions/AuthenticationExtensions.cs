@@ -22,7 +22,6 @@ public static class AuthenticationExtensions
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                // Claimovi ostaju pod našim nazivima (ClaimNames), pa [Authorize(Roles = ...)] čita claim "Role".
                 options.MapInboundClaims = false;
 
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -41,7 +40,6 @@ public static class AuthenticationExtensions
 
                 options.Events = new JwtBearerEvents
                 {
-                    // Potpis i rok su ispravni, ali token je možda opozvan (odjava, nova lozinka, deaktivacija, brisanje).
                     OnTokenValidated = async context =>
                     {
                         var principal = context.Principal!;
@@ -57,7 +55,6 @@ public static class AuthenticationExtensions
                         }
                     },
 
-                    // 401 i 403 u istom obliku kao ostale greške API-ja.
                     OnChallenge = context =>
                     {
                         context.HandleResponse();
@@ -75,7 +72,6 @@ public static class AuthenticationExtensions
         return services;
     }
 
-    // Bez ispravne konfiguracije API se ne pokreće, umjesto da padne tek pri prvoj prijavi.
     private static void ValidateSettings(JwtSettings settings)
     {
         if (Encoding.UTF8.GetByteCount(settings.Key) < JwtSettings.MinKeyBytes)

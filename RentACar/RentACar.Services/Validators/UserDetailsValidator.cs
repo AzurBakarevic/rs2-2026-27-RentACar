@@ -3,7 +3,6 @@ using RentACar.Model.Requests;
 
 namespace RentACar.Services.Validators;
 
-// Pravila za lične podatke, zajednička za dodavanje, izmjenu, registraciju i profil (uključuje se preko Include).
 public class UserDetailsValidator : AbstractValidator<IUserDetails>
 {
     public UserDetailsValidator()
@@ -18,7 +17,6 @@ public class UserDetailsValidator : AbstractValidator<IUserDetails>
 
         RuleFor(x => x.Email).ValidEmail();
 
-        // Npr. +387 61 123 456 ili 061/123-456 (upute 4: format telefona).
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage("Broj telefona je obavezan.")
             .Matches(@"^\+?[0-9][0-9 /-]{5,28}$").WithMessage("Broj telefona nije ispravnog formata.");
@@ -31,7 +29,6 @@ public class UserDetailsValidator : AbstractValidator<IUserDetails>
         RuleFor(x => x.DriverLicenseNumber)
             .MaximumLength(30).WithMessage("Broj vozačke dozvole može imati najviše 30 znakova.");
 
-        // Vozačka se unosi cijela ili nikako (provjera važenja je pri rezervaciji).
         RuleFor(x => x.DriverLicenseValidUntil)
             .NotNull().WithMessage("Unesite datum do kojeg važi vozačka dozvola.")
             .When(x => !string.IsNullOrWhiteSpace(x.DriverLicenseNumber));

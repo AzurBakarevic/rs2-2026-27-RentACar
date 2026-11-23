@@ -1,7 +1,5 @@
 namespace RentACar.Model.Responses;
 
-// Isti odgovor za listu i detalje. Slika nije u odgovoru (upute 8.2: liste bez velikih base64 podataka);
-// klijent je učitava sa GET /Vehicles/{id}/Image kad je HasImage = true.
 public class VehicleResponse
 {
     public int Id { get; set; }
@@ -29,10 +27,8 @@ public class VehicleResponse
     public int TransmissionTypeId { get; set; }
     public string TransmissionTypeName { get; set; } = string.Empty;
 
-    // Iz recenzija završenih najmova; null dok vozilo nema nijednu recenziju.
     public double? AverageRating { get; set; }
     public int ReviewCount { get; set; }
 
-    // null = zapis se može obrisati.
     public string? DeleteBlockedReason { get; set; }
 }

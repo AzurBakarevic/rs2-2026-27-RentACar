@@ -1,7 +1,5 @@
 namespace RentACar.Services.Interfaces;
 
-// Stanje plaćanja kako ga vraća servis za plaćanje (Stripe PaymentIntent), bez tipova iz Stripe biblioteke.
-// Status je Stripe-ov: requires_payment_method, requires_confirmation, requires_action, processing, canceled, succeeded.
 public record GatewayPaymentIntent(
     string Id,
     string Status,

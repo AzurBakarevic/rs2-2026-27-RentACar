@@ -8,10 +8,8 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.Implementations;
 
-// Svaki pokazatelj je jedan COUNT u bazi, a grafikon jedan GROUP BY (upute 8.2); redovi se ne učitavaju u memoriju.
 public class DashboardService : IDashboardService
 {
-    // Prijava: grafikon s brojem rezervacija po danima za posljednjih sedam dana.
     private const int ChartDays = 7;
 
     private readonly RentACarDbContext _dbContext;
@@ -34,9 +32,6 @@ public class DashboardService : IDashboardService
         };
     }
 
-    // Dan je kalendarski dan po lokalnom vremenu agencije, a ne po UTC-u. Baza zato grupiše po satima od početka
-    // perioda (najviše 7 × 24 grupe), a sati se ovdje sabiraju po lokalnim danima. Pomak lokalnog vremena od UTC-a
-    // je uvijek cijeli sat, pa svaki sat pripada tačno jednom danu, i kad se mijenja ljetno računanje vremena.
     private async Task<List<DailyReservationCountResponse>> GetReservationsPerDayAsync()
     {
         var today = AgencyTime.ToLocalDate(DateTime.UtcNow);

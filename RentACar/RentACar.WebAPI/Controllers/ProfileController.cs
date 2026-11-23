@@ -7,7 +7,6 @@ using RentACar.WebAPI.Extensions;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Profil prijavljenog korisnika. Nema Id-a u ruti ni u body-ju: korisnik se uzima iz tokena (upute 5).
 [Authorize]
 [ApiController]
 [Route("[controller]")]
@@ -32,7 +31,6 @@ public class ProfileController : ControllerBase
         return await _userService.UpdateProfileAsync(request);
     }
 
-    // Nakon promjene lozinke stari token više ne važi, pa se korisnik mora ponovo prijaviti.
     [HttpPut("Password")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> ChangePassword([FromBody] UserPasswordChangeRequest request)
@@ -50,7 +48,6 @@ public class ProfileController : ControllerBase
         return File(image.Content, image.ContentType);
     }
 
-    // Slika se šalje kao multipart/form-data (polje "image"), kao kod vozila (upute 5).
     [HttpPut("Image")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(FormFileExtensions.MaxImageRequestBytes)]

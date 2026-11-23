@@ -2,7 +2,6 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'dashboard.g.dart';
 
-/// Pokazatelji i grafikon na početnom ekranu (prijava: Dashboard).
 @JsonSerializable()
 class Dashboard {
   final int vehicleCount;
@@ -10,7 +9,6 @@ class Dashboard {
   final int activeReservationCount;
   final int awaitingConfirmationCount;
 
-  /// Posljednjih sedam dana, od najstarijeg do danas, i dani bez rezervacija.
   final List<DailyReservationCount> reservationsPerDay;
 
   Dashboard({
@@ -28,7 +26,6 @@ class Dashboard {
 
 @JsonSerializable()
 class DailyReservationCount {
-  /// Lokalni datum (API šalje samo datum, npr. "2026-11-21").
   final DateTime date;
   final int count;
 

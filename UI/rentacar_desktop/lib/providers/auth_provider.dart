@@ -7,7 +7,6 @@ import '../utils/api_client_exception.dart';
 import 'base_provider.dart';
 
 class AuthProvider with ChangeNotifier {
-  // Naziv uloge kao u seedu na backendu (RoleNames.Administrator).
   static const String administratorRole = 'Administrator';
 
   static String? _accessToken;
@@ -16,7 +15,6 @@ class AuthProvider with ChangeNotifier {
   static String? get accessToken => _accessToken;
   static String? get username => _username;
 
-  /// Postavlja ga main.dart: vraća aplikaciju na ekran prijave s porukom.
   static void Function(String message)? onSessionExpired;
 
   bool get isAuthenticated => _accessToken != null;
@@ -33,7 +31,6 @@ class AuthProvider with ChangeNotifier {
 
     final data = jsonDecode(response.body);
     if (data['role'] != administratorRole) {
-      // Token se ne čuva. Odjava na serveru bi korisnika odjavila i s mobilne aplikacije.
       throw ApiClientException('Pristup desktop aplikaciji imaju samo administratori.');
     }
 
@@ -42,7 +39,6 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Poništava token na serveru; lokalna sesija se briše i kad server nije dostupan.
   Future<void> logout() async {
     if (_accessToken == null) {
       return;
@@ -61,9 +57,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  /// Poziva ga BaseProvider kad API vrati 401 za prijavljenog korisnika.
   static void handleUnauthorized(String message) {
-    // Kod više paralelnih zahtjeva samo prvi 401 vraća na prijavu.
     if (_accessToken == null) {
       return;
     }

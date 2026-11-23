@@ -7,7 +7,6 @@ using RentACar.WebAPI.Services.AccessManager;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Prijava, registracija, odjava i reset lozinke.
 [Authorize]
 [ApiController]
 [Route("[controller]")]
@@ -22,7 +21,6 @@ public class AccessController : ControllerBase
         _userService = userService;
     }
 
-    // Kredencijali idu u body POST zahtjeva, nikad u query string (upute 5).
     [AllowAnonymous]
     [HttpPost("Login")]
     public async Task<UserLoginResponse> Login([FromBody] UserLoginRequest request)
@@ -30,7 +28,6 @@ public class AccessController : ControllerBase
         return await _accessManager.LoginAsync(request);
     }
 
-    // Registracija iz mobilne aplikacije; uloga je uvijek Korisnik.
     [AllowAnonymous]
     [HttpPost("Register")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -40,7 +37,6 @@ public class AccessController : ControllerBase
         return StatusCode(StatusCodes.Status201Created, result);
     }
 
-    // Šalje kod za reset lozinke na e-mail (preko RabbitMQ-a i Worker-a). Uvijek 204, i kad nalog ne postoji.
     [AllowAnonymous]
     [HttpPost("ForgotPassword")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -50,7 +46,6 @@ public class AccessController : ControllerBase
         return NoContent();
     }
 
-    // Nova lozinka uz kod iz e-maila; nakon toga se korisnik prijavljuje novom lozinkom.
     [AllowAnonymous]
     [HttpPost("ResetPassword")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -60,7 +55,6 @@ public class AccessController : ControllerBase
         return NoContent();
     }
 
-    // Poništava sve tokene prijavljenog korisnika na serveru (upute 5).
     [HttpPost("Logout")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Logout()

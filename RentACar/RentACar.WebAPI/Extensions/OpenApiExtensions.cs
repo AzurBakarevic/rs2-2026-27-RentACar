@@ -6,7 +6,6 @@ public static class OpenApiExtensions
 {
     private const string BearerSchemeName = "Bearer";
 
-    // OpenAPI dokument (samo u Developmentu, vidi Program.cs) s JWT shemom, da Scalar ima polje za token.
     public static IServiceCollection AddRentACarOpenApi(this IServiceCollection services)
     {
         services.AddOpenApi(options =>

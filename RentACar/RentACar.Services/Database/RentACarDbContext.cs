@@ -23,7 +23,6 @@ public class RentACarDbContext(DbContextOptions<RentACarDbContext> options) : Db
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<PasswordResetCode> PasswordResetCodes => Set<PasswordResetCode>();
 
-    // Svako DateTime svojstvo (i DateTime?) se pri čitanju označava kao UTC, pa JSON vraća vrijeme s "Z" (upute A.4).
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();

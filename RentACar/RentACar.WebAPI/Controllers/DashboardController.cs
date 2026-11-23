@@ -6,7 +6,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Početni ekran desktop aplikacije, samo za administratora (upute 5).
 [Authorize(Roles = RoleNames.Administrator)]
 [ApiController]
 [Route("[controller]")]

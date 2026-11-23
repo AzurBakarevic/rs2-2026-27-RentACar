@@ -18,7 +18,6 @@ import '../widgets/field_with_add_button.dart';
 import 'reference_data_dialog.dart';
 import 'reference_data_tab.dart';
 
-/// Šifarnici (prijava: „Upravljanje referentnim podacima”): marke, modeli, kategorije, gorivo i mjenjač.
 class ReferenceDataScreen extends StatelessWidget {
   const ReferenceDataScreen({super.key});
 
@@ -119,13 +118,11 @@ class ReferenceDataScreen extends StatelessWidget {
   static Future<bool> _openModelForm(BuildContext context, VehicleModel? model) async {
     final modelProvider = context.read<VehicleModelProvider>();
 
-    // Najveća dozvoljena stranica (upute 8.2); marki je u praksi mnogo manje.
     final brands = await context.read<BrandProvider>().get(filter: {'pageSize': 100});
     final brandItems = [
       for (final brand in brands.items ?? <Brand>[])
         DropdownMenuItem<int>(value: brand.id, child: Text(brand.name)),
     ];
-    // Marka modela koji se mijenja mora biti u listi i kad nije na prvoj stranici.
     if (model != null && !brandItems.any((item) => item.value == model.brandId)) {
       brandItems.add(DropdownMenuItem<int>(value: model.brandId, child: Text(model.brandName)));
     }
@@ -150,7 +147,6 @@ class ReferenceDataScreen extends StatelessWidget {
   }
 }
 
-/// Marka u formi modela, uz dodavanje nove marke.
 class _BrandField extends StatefulWidget {
   const _BrandField({required this.items});
 
@@ -171,7 +167,6 @@ class _BrandFieldState extends State<_BrandField> {
       onAdd: _addBrand,
       field: FormBuilderDropdown<int>(
         name: 'brandId',
-        // Potvrda je u formi, jer bi poruka na dnu ekrana ostala iza dijaloga.
         decoration: InputDecoration(
           labelText: 'Marka',
           helperText: _brandAdded ? 'Marka je sačuvana.' : null,
@@ -195,7 +190,6 @@ class _BrandFieldState extends State<_BrandField> {
       _items = [DropdownMenuItem<int>(value: brand.id, child: Text(brand.name)), ..._items];
       _brandAdded = true;
     });
-    // Promjena liste vraća polje na početnu vrijednost, pa se nova marka bira tek poslije nje.
     await WidgetsBinding.instance.endOfFrame;
     if (mounted) {
       FormBuilder.of(context)?.fields['brandId']?.didChange(brand.id);

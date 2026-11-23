@@ -1,12 +1,8 @@
 import 'formatters.dart';
 
-// Ista pravila i poruke kao FluentValidation na backendu, da korisnik grešku vidi prije slanja.
-
 final RegExp _decimalPattern = RegExp(r'^-?\d+([.,]\d+)?$');
 final RegExp _integerPattern = RegExp(r'^-?\d+$');
 
-/// Decimalni broj (cijena, trošak, procenat): obavezan, najviše [maxDecimals] decimala i u dozvoljenom rasponu.
-/// [range] vraća poruku kad je vrijednost izvan raspona, a inače `null`.
 String? Function(String?) decimalValidator({
   required String requiredMessage,
   required String? Function(double value) range,
@@ -29,7 +25,6 @@ String? Function(String?) decimalValidator({
   };
 }
 
-/// Cijeli broj (godina, broj sjedišta, količina): obavezan i u rasponu od [min] do [max].
 String? Function(String?) integerValidator({
   required String requiredMessage,
   required int min,
@@ -49,12 +44,10 @@ String? Function(String?) integerValidator({
   };
 }
 
-/// Neobavezan tekst s najvećom dužinom.
 String? Function(String?) maxLengthText(int maxLength, String message) {
   return (value) => (value?.trim().length ?? 0) > maxLength ? message : null;
 }
 
-/// Polje s odabirom (padajuća lista, datum, vozilo) koje mora imati vrijednost.
 String? Function(T?) requiredValue<T>(String message) {
   return (value) => value == null ? message : null;
 }

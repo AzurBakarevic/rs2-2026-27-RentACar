@@ -9,7 +9,6 @@ class TableColumnDef {
   final int flex;
 }
 
-/// Tabela kao na skicama: zaglavlje velikim slovima, centrirane ćelije, okvir sa zaobljenim uglovima.
 class DataTableCard extends StatelessWidget {
   const DataTableCard({
     super.key,
@@ -106,7 +105,6 @@ class DataTableCard extends StatelessWidget {
           separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.border),
           itemBuilder: (context, index) => _buildRow(rows[index]),
         ),
-        // Pri promjeni stranice stari redovi ostaju vidljivi dok ne stignu novi.
         if (isLoading) const Positioned(left: 0, right: 0, top: 0, child: LinearProgressIndicator(minHeight: 2)),
       ],
     );
@@ -133,7 +131,6 @@ class DataTableCard extends StatelessWidget {
   }
 
   Widget _buildMessage(Widget child) {
-    // U sredini slobodnog prostora, a poruka viša od njega se pomjera.
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         child: ConstrainedBox(

@@ -1,7 +1,5 @@
 namespace RentACar.Services.Helpers;
 
-// Zašto se zapis ne može obrisati. Isti tekst ide u odgovor (onemogućeno dugme s razlogom, upute 6)
-// i u grešku pri pokušaju brisanja.
 public static class DeleteBlockedReasons
 {
     public const string BrandHasModels = "Marka se ne može obrisati jer ima modele.";

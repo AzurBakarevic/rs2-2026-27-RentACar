@@ -10,7 +10,6 @@ public class VehicleMaintenanceResponse
 
     public int VehicleId { get; set; }
 
-    // Marka i model, npr. "Volkswagen Golf".
     public string VehicleName { get; set; } = string.Empty;
     public string VehicleRegistrationNumber { get; set; } = string.Empty;
     public bool VehicleHasImage { get; set; }

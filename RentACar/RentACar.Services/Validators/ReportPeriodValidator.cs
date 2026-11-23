@@ -5,7 +5,6 @@ namespace RentACar.Services.Validators;
 
 public class ReportPeriodValidator : AbstractValidator<ReportPeriodRequest>
 {
-    // Izvještaj čita sve rezervacije iz perioda, pa period ima gornju granicu (godina dana, i prestupna).
     public const int MaxPeriodDays = 366;
 
     public ReportPeriodValidator()

@@ -9,8 +9,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.WebAPI.Services.AccessManager;
 
-// Prijava i odjava. Provjeru lozinke radi UserService; ovdje se samo pravi potpisani JWT.
-// Bez refresh tokena: kad token istekne (401), klijent vraća korisnika na prijavu (upute A.2).
 public class AccessManager : IAccessManager
 {
     private readonly IUserService _userService;

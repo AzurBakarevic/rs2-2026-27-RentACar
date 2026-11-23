@@ -8,7 +8,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.ReservationStateMachine;
 
-// Rezervacija koja još ne postoji: jedina akcija je kreiranje, nakon čega je rezervacija na čekanju.
 public class InitialReservationState : BaseReservationState
 {
     private readonly ReservationCalculator _calculator;
@@ -22,14 +21,12 @@ public class InitialReservationState : BaseReservationState
         _calculator = calculator;
     }
 
-    // Poziva se unutar transakcije koju otvara ReservationService.
     public override async Task<Reservation> InsertAsync(ReservationInsertRequest request)
     {
         var userId = AuthenticatedUser.GetUserId() ?? throw new UnauthorizedAccessException();
 
         await LockAsync(userId, request);
 
-        // Provjera i obračun tek nakon zaključavanja, pa vide i rezervaciju koju je upravo upisao drugi zahtjev.
         var calculation = await _calculator.CalculateAsync(userId, request);
         var now = DateTime.UtcNow;
 
@@ -70,10 +67,6 @@ public class InitialReservationState : BaseReservationState
         return reservation;
     }
 
-    // Zaključava red korisnika, vozila i odabrane opreme do kraja transakcije (UPDLOCK), uvijek istim redoslijedom.
-    // Dva istovremena zahtjeva za isto vozilo, istog korisnika ili istu opremu se tako izvršavaju jedan za drugim,
-    // pa drugi vidi rezervaciju prvog i dobija poruku da termin nije slobodan (prijava: onemogućiti preklapanje najmova).
-    // Obično čitanje tih redova (npr. lista vozila) nije blokirano.
     private async Task LockAsync(int userId, ReservationInsertRequest request)
     {
         await DbContext.Database.ExecuteSqlAsync($"SELECT Id FROM Users WITH (UPDLOCK, ROWLOCK) WHERE Id = {userId}");

@@ -6,7 +6,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.WebAPI.Controllers;
 
-// PDF izvještaji (prijava), samo za administratora (upute 5). Npr. GET /Reports/Reservations?From=2026-10-01&To=2026-10-31.
 [Authorize(Roles = RoleNames.Administrator)]
 [ApiController]
 [Route("[controller]")]

@@ -30,7 +30,6 @@ public class VehicleService
         _authenticatedUser = authenticatedUser;
     }
 
-    // Deaktivirano vozilo je uklonjeno iz ponude: korisnik ga ne vidi ni u listi ni u detaljima, a administrator vidi sva.
     protected override IQueryable<Vehicle> GetQuery()
     {
         var query = base.GetQuery();
@@ -101,7 +100,6 @@ public class VehicleService
                 throw new ClientException("Vrijeme vraćanja mora biti poslije vremena preuzimanja.");
             }
 
-            // Dva perioda se preklapaju ako svaki počinje prije nego što drugi završi.
             query = query.Where(x =>
                 !x.Reservations.Any(r => ReservationStatuses.Active.Contains(r.Status) && r.PickupAt < to && from < r.ReturnAt)
                 && !x.Maintenances.Any(m => m.StartAt < to && from < m.EndAt));
@@ -126,8 +124,6 @@ public class VehicleService
 
     protected override Task BeforeUpdateAsync(VehicleUpdateRequest request, Vehicle entity) => ValidateAsync(entity);
 
-    // Vozilo s rezervacijama ostaje zbog historije, plaćanja i recenzija; može se samo deaktivirati.
-    // Servisi vozila bez rezervacija brišu se zajedno s njim (kaskadno brisanje u bazi).
     protected override async Task BeforeDeleteAsync(Vehicle entity)
     {
         if (await _dbContext.Reservations.AnyAsync(x => x.VehicleId == entity.Id))
@@ -136,9 +132,6 @@ public class VehicleService
         }
     }
 
-    // ---------- Slika ----------
-
-    // Čita se samo kolona sa slikom. Slika se vraća i za neaktivno vozilo, jer se prikazuje i u historiji rezervacija.
     public async Task<ImageResponse> GetImageAsync(int id)
     {
         var image = await _dbContext.Vehicles
@@ -163,7 +156,6 @@ public class VehicleService
     {
         await _imageValidator.ValidateAndThrowAsync(request);
 
-        // Jedan UPDATE, bez učitavanja stare slike u memoriju.
         var updated = await _dbContext.Vehicles
             .Where(x => x.Id == id)
             .ExecuteUpdateAsync(s => s.SetProperty(x => x.Image, request.Content));
@@ -173,8 +165,6 @@ public class VehicleService
             throw new KeyNotFoundException($"Vehicle with id {id} not found.");
         }
     }
-
-    // ---------- Pomoćne metode ----------
 
     private async Task ValidateAsync(Vehicle entity)
     {

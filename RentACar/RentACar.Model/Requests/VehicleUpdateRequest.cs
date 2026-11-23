@@ -1,6 +1,5 @@
 namespace RentACar.Model.Requests;
 
-// Slika se mijenja posebno: PUT /Vehicles/{id}/Image (multipart/form-data).
 public class VehicleUpdateRequest
 {
     public string RegistrationNumber { get; set; } = string.Empty;
@@ -14,6 +13,5 @@ public class VehicleUpdateRequest
     public int FuelTypeId { get; set; }
     public int TransmissionTypeId { get; set; }
 
-    // false = vozilo se uklanja iz ponude u mobilnoj aplikaciji (vozilo s rezervacijama se ne briše, nego deaktivira).
     public bool IsActive { get; set; }
 }

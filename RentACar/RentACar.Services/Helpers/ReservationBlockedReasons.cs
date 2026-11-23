@@ -1,7 +1,5 @@
 namespace RentACar.Services.Helpers;
 
-// Zašto se akcija nad rezervacijom trenutno ne može izvršiti; null = može. Isto pravilo i isti tekst koriste
-// odgovor (onemogućeno dugme s razlogom, upute 6) i greška pri pokušaju akcije.
 public static class ReservationBlockedReasons
 {
     public const string NotPaid = "Potvrditi se može samo plaćena rezervacija.";

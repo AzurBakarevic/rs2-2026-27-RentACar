@@ -1,7 +1,5 @@
 namespace RentACar.Model.Messaging;
 
-// Vrijednosti dolaze iz .env-a (RabbitMQ__Host, RabbitMQ__Port, RabbitMQ__Username, RabbitMQ__Password), upute 3.3.
-// Koriste ih i API i Worker.
 public class RabbitMqSettings
 {
     public const string SectionName = "RabbitMQ";
@@ -11,7 +9,6 @@ public class RabbitMqSettings
     public string Username { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
 
-    // Bez ovih podataka servis se ne pokreće, umjesto da padne tek pri prvoj poruci.
     public void Validate()
     {
         if (string.IsNullOrWhiteSpace(Host) || Port <= 0)

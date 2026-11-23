@@ -44,9 +44,6 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
         _cancelValidator = cancelValidator;
     }
 
-    // ---------- Čitanje ----------
-
-    // Administrator vidi sve rezervacije, a korisnik samo svoje; tuđa rezervacija za njega ne postoji (404).
     protected override IQueryable<Reservation> GetQuery() => RestrictToCurrentUser(base.GetQuery());
 
     protected override IQueryable<Reservation> ApplyFilters(IQueryable<Reservation> query, ReservationSearchObject search)
@@ -82,7 +79,6 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
                 : query.Where(x => !ReservationStatuses.Active.Contains(x.Status));
         }
 
-        // Najam koji bar dijelom pada u traženi period: završava poslije njegovog početka i počinje prije njegovog kraja.
         if (search.From.HasValue)
         {
             var from = AgencyTime.AsUtc(search.From.Value);
@@ -98,7 +94,6 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
         return query;
     }
 
-    // Kao na skicama: prvo aktivne od najbližeg preuzimanja, zatim prošle od najnovije.
     protected override IQueryable<Reservation> ApplyOrdering(IQueryable<Reservation> query)
         => query.OrderBy(x => ReservationStatuses.Active.Contains(x.Status) ? 0 : 1)
             .ThenBy(x => ReservationStatuses.Active.Contains(x.Status) ? x.PickupAt : (DateTime?)null)
@@ -117,7 +112,6 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
         return result;
     }
 
-    // Detalji: uz osnovne podatke još oprema, uplata i historija statusa, svaka jednim upitom (bez N+1, upute 8.2).
     public override async Task<ReservationResponse> GetByIdAsync(int id)
     {
         var reservation = await base.GetByIdAsync(id);
@@ -129,7 +123,6 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
             .ProjectToType<ReservationEquipmentResponse>(_mapper.Config)
             .ToListAsync();
 
-        // Poništena plaćanja (npr. istekao rok) se ne prikazuju; aktivna uplata je najviše jedna (jedinstveni indeks).
         reservation.Payment = await _dbContext.Payments
             .AsNoTracking()
             .Where(x => x.ReservationId == id && x.Status != PaymentStatus.Cancelled)
@@ -149,8 +142,6 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
         return reservation;
     }
 
-    // ---------- Kreiranje ----------
-
     public async Task<ReservationCalculationResponse> CalculateAsync(ReservationInsertRequest request)
     {
         await _insertValidator.ValidateAndThrowAsync(request);
@@ -160,7 +151,6 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
         return await _calculator.CalculateAsync(userId, request);
     }
 
-    // Provjera dostupnosti, obračun i upis rezervacije, opreme, historije i notifikacije idu u jednoj transakciji.
     public async Task<ReservationResponse> InsertAsync(ReservationInsertRequest request)
     {
         await _insertValidator.ValidateAndThrowAsync(request);
@@ -176,8 +166,6 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
         return await GetByIdAsync(reservation.Id);
     }
 
-    // ---------- Promjena statusa ----------
-
     public Task<ReservationResponse> ConfirmAsync(int id)
         => ChangeStatusAsync(id, (state, reservation) => state.ConfirmAsync(reservation));
 
@@ -191,7 +179,6 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
     public Task<ReservationResponse> CompleteAsync(int id)
         => ChangeStatusAsync(id, (state, reservation) => state.CompleteAsync(reservation));
 
-    // Tijelo zahtjeva nije obavezno: korisnik otkazuje bez razloga.
     public async Task<ReservationResponse> CancelAsync(int id, ReservationCancelRequest? request)
     {
         request ??= new ReservationCancelRequest();
@@ -202,8 +189,6 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
         return await ChangeStatusAsync(id, (state, reservation) => state.CancelAsync(reservation, reason));
     }
 
-    // Učitava rezervaciju sa zaključavanjem (UPDLOCK) do kraja transakcije: drugi zahtjev za istu rezervaciju
-    // (npr. administrator je potvrđuje dok je korisnik otkazuje) čeka, pa vidi novi status i state machine ga odbije.
     private async Task<ReservationResponse> ChangeStatusAsync(int id, Func<BaseReservationState, Reservation, Task> action)
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
@@ -220,13 +205,10 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
         await _dbContext.SaveChangesAsync();
         await transaction.CommitAsync();
 
-        // E-mail o potvrdi ili otkazivanju ide tek kad je promjena spremljena.
         await _pendingEmails.PublishAsync();
 
         return await GetByIdAsync(id);
     }
-
-    // ---------- Pomoćne metode ----------
 
     private IQueryable<Reservation> RestrictToCurrentUser(IQueryable<Reservation> query)
     {
@@ -239,7 +221,6 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
         return query.Where(x => x.UserId == userId);
     }
 
-    // Polja koja se ne čitaju iz baze: rok za plaćanje i akcije po pravilima stanja rezervacije.
     private void SetComputedFields(ReservationResponse reservation)
     {
         reservation.PaymentDeadline = PaymentRules.GetPaymentDeadline(reservation.CreatedAt);

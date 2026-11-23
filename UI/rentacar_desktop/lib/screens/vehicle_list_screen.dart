@@ -16,8 +16,6 @@ import '../widgets/status_badge.dart';
 import '../widgets/vehicle_search_field.dart';
 import 'vehicle_details_screen.dart';
 
-/// Vozila (prijava: „Upravljanje vozilima”): tabela sa slikom, pretraga po marki, modelu ili registraciji.
-/// Vozilo s rezervacijama backend ne dozvoljava obrisati; umjesto toga se deaktivira.
 class VehicleListScreen extends StatelessWidget {
   const VehicleListScreen({super.key});
 
@@ -67,7 +65,6 @@ class VehicleListScreen extends StatelessWidget {
     );
   }
 
-  // Forma bira iz ovih šifarnika; marka se ne provjerava posebno, jer model bez marke ne postoji.
   static Future<String?> _newBlockedReason(BuildContext context) async {
     final exists = await Future.wait([
       context.read<VehicleModelProvider>().hasAny(),
@@ -84,7 +81,6 @@ class VehicleListScreen extends StatelessWidget {
   }
 }
 
-/// Slika vozila sa servera ili ikona kad vozilo nema sliku (ili se slika ne može učitati).
 class VehicleImage extends StatelessWidget {
   const VehicleImage({
     super.key,
@@ -113,7 +109,6 @@ class VehicleImage extends StatelessWidget {
                 provider.imageUrl(vehicleId),
                 headers: provider.imageHeaders(),
                 fit: BoxFit.cover,
-                // Slika se dekodira u veličini u kojoj se prikazuje, ne u punoj rezoluciji.
                 cacheWidth: (width * MediaQuery.devicePixelRatioOf(context)).round(),
                 errorBuilder: (_, _, _) => const ImagePlaceholder(),
               )

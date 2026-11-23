@@ -6,8 +6,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Historija plaćanja (prijava): korisnik vidi svoje uplate i povrate, administrator sve.
-// Plaćanje se pokreće i potvrđuje na rezervaciji (ReservationsController), a ovdje se samo čita.
 [Authorize]
 [ApiController]
 [Route("[controller]")]

@@ -8,7 +8,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Čitaju svi prijavljeni (npr. filteri u mobilnoj aplikaciji), a mijenja samo administrator.
 public class FuelTypesController
     : BaseCRUDController<FuelTypeResponse, FuelTypeSearchObject, FuelTypeInsertRequest, FuelTypeUpdateRequest, IFuelTypeService>
 {

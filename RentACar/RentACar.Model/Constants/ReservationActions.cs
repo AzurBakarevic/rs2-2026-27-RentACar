@@ -1,7 +1,5 @@
 namespace RentACar.Model.Constants;
 
-// Nazivi akcija u AllowedActions odgovora rezervacije. Aplikacije po njima prikazuju dugmad
-// (desktop: Potvrdi, Odbij, Završi, Otkaži; mobilna: Plati, Otkaži, Recenzija), a pravila provjerava server.
 public static class ReservationActions
 {
     public const string Confirm = "Confirm";

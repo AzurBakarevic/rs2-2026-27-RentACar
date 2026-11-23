@@ -9,11 +9,8 @@ using RentACar.Services.ReservationStateMachine;
 
 namespace RentACar.Services.Implementations;
 
-// Pozadinski poslovi nad rezervacijama. Svaka rezervacija se obrađuje u svojoj transakciji, pa greška jedne
-// (npr. Stripe trenutno nije dostupan) ne zaustavlja ostale; ona se zapisuje u log i ponavlja u sljedećem krugu.
 public class ReservationJobService : IReservationJobService
 {
-    // Najviše toliko rezervacija po krugu, da jedan krug ne traje predugo; ostale dolaze na red za minutu.
     private const int BatchSize = 50;
 
     private readonly RentACarDbContext _dbContext;
@@ -59,7 +56,6 @@ public class ReservationJobService : IReservationJobService
             }
             catch (ClientException ex)
             {
-                // Npr. plaćanje se još obrađuje kod Stripe-a; pokušava se ponovo u sljedećem krugu.
                 _logger.LogWarning("Unpaid reservation {ReservationId} was not cancelled yet: {Message}", id, ex.Message);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -68,7 +64,6 @@ public class ReservationJobService : IReservationJobService
             }
             finally
             {
-                // E-mail rezervacije koja nije otkazana ne smije otići sa sljedećom.
                 _pendingEmails.Clear();
                 _dbContext.ChangeTracker.Clear();
             }
@@ -107,7 +102,6 @@ public class ReservationJobService : IReservationJobService
             {
                 await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-                // Uslov u UPDATE-u: ako je rezervacija u međuvremenu otkazana ili je podsjetnik već poslan, ništa se ne mijenja.
                 var updated = await _dbContext.Reservations
                     .Where(x => x.Id == item.Reservation.Id && x.Status == ReservationStatus.Confirmed && x.ReminderSentAt == null)
                     .ExecuteUpdateAsync(s => s.SetProperty(x => x.ReminderSentAt, DateTime.UtcNow), cancellationToken);
@@ -134,8 +128,6 @@ public class ReservationJobService : IReservationJobService
         return sent;
     }
 
-    // Isto zaključavanje kao pri promjeni statusa iz aplikacije: ako korisnik baš tada plaća ili otkazuje,
-    // jedno čeka drugo, a state machine odlučuje po stanju u trenutku zaključavanja.
     private async Task<bool> ExpireAsync(int id)
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();

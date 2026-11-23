@@ -18,7 +18,6 @@ import 'reservation_action_dialog.dart';
 import 'reservation_list_screen.dart';
 import 'vehicle_list_screen.dart';
 
-/// Detalji rezervacije (prijava): podaci o najmu, dodatna oprema, uplata i historija statusa, uz iste akcije kao u listi.
 class ReservationDetailsScreen extends StatefulWidget {
   const ReservationDetailsScreen({super.key, required this.reservationId});
 
@@ -39,7 +38,6 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
     _load();
   }
 
-  // Pri osvježavanju stari podaci ostaju vidljivi, ali su akcije skrivene dok ne stigne novo stanje.
   Future<void> _load() async {
     setState(() {
       _isLoading = true;
@@ -54,8 +52,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
           _isLoading = false;
         });
       }
-    } on UnauthorizedException {
-      // Aplikacija se već vraća na prijavu.
+    } on UnauthorizedException catch (_) {
     } on ApiClientException catch (e) {
       _showError(e.message);
     } catch (e) {
@@ -81,7 +78,6 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
       child: Stack(
         children: [
           Positioned.fill(child: _buildBody()),
-          // U desnoj margini i izvan dijela koji se pomjera, kao kod forme vozila.
           Positioned(
             top: 8,
             right: 16,
@@ -190,7 +186,6 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
               ),
           ],
         ),
-        // U detaljima ima mjesta, pa se razlog vidi i bez prelaska mišem.
         for (final action in reservation.actions)
           if (reservation.blockedReason(action) case final reason?)
             Padding(
@@ -363,7 +358,6 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-/// Dvije kolone: naziv polja lijevo, vrijednost desno (upute 6).
 class _InfoRow extends StatelessWidget {
   const _InfoRow({
     required this.icon,

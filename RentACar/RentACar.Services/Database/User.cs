@@ -17,7 +17,6 @@ public class User : IEntity
     public bool IsDeleted { get; set; }
     public DateTime CreatedAt { get; set; }
 
-    // Povećava se pri odjavi, promjeni lozinke, uloge ili statusa; token sa starom verzijom više ne važi (upute 5).
     public int TokenVersion { get; set; }
 
     public int RoleId { get; set; }

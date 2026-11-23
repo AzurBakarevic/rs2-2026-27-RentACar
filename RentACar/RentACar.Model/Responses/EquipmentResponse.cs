@@ -8,6 +8,5 @@ public class EquipmentResponse
     public int Quantity { get; set; }
     public bool IsActive { get; set; }
 
-    // null = zapis se može obrisati.
     public string? DeleteBlockedReason { get; set; }
 }

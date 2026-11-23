@@ -7,6 +7,5 @@ public class SeasonalPriceUpdateRequest
     public DateOnly EndDate { get; set; }
     public decimal IncreasePercentage { get; set; }
 
-    // Neaktivna sezonska cijena se ne uračunava u cijenu i ne smeta drugim sezonama u istom periodu.
     public bool IsActive { get; set; }
 }

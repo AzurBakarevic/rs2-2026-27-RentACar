@@ -22,7 +22,6 @@ class _MenuEntry {
   final Widget Function() builder;
 }
 
-// Stavke se dodaju redom kako ekrani budu gotovi (redoslijed kao na skicama).
 final List<_MenuEntry> _menuEntries = [
   _MenuEntry(DashboardScreen.title, () => const DashboardScreen()),
   _MenuEntry(VehicleListScreen.title, () => const VehicleListScreen()),
@@ -33,11 +32,8 @@ final List<_MenuEntry> _menuEntries = [
   _MenuEntry(ReferenceDataScreen.title, () => const ReferenceDataScreen()),
 ];
 
-/// Početni ekran nakon prijave (prijava: Dashboard).
 Widget buildHomeScreen() => _menuEntries.first.builder();
 
-/// Okvir svih ekrana: meni lijevo, naslov i prijavljeni korisnik gore.
-/// Ekran otvoren s drugog ekrana dobija i dugme „Nazad” (upute 6).
 class MasterScreen extends StatefulWidget {
   const MasterScreen({
     super.key,
@@ -51,13 +47,10 @@ class MasterScreen extends StatefulWidget {
   final String title;
   final Widget child;
 
-  /// Stavka menija koja je označena (detalji vozila npr. pripadaju stavci „Vozila”).
   final String menuLabel;
 
-  /// Akcija dugmeta „Nazad” kad ekran vraća rezultat; inače se ekran samo zatvara.
   final VoidCallback? onBack;
 
-  /// Razlog zbog kojeg se ekran trenutno ne može napustiti (npr. spremanje u toku) ili `null`.
   final String? navigationBlockedReason;
 
   @override
@@ -65,7 +58,6 @@ class MasterScreen extends StatefulWidget {
 }
 
 class _MasterScreenState extends State<MasterScreen> {
-  // U užem prozoru se okvir pomjera vodoravno, jer tabele ne stanu u manju širinu.
   static const double _minWidth = 1280;
 
   final _horizontalController = ScrollController();
@@ -81,7 +73,6 @@ class _MasterScreenState extends State<MasterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Stablo je isto u svakoj širini, da promjena veličine prozora ne isprazni formu.
       body: LayoutBuilder(
         builder: (context, constraints) => Scrollbar(
           controller: _horizontalController,

@@ -6,11 +6,8 @@ using Stripe;
 
 namespace RentACar.Services.Implementations;
 
-// Stripe pozivi (plaćanje karticom i povrat novca). Za razliku od profesora (statički StripeConfiguration.ApiKey
-// postavljan pri svakom pozivu), StripeClient dolazi iz DI-ja s ključem iz .env-a.
 public class StripePaymentGateway : IPaymentGateway
 {
-    // Stripe odbija poništavanje plaćanja koje je u međuvremenu uspjelo ili je već poništeno.
     private const string UnexpectedStateCode = "payment_intent_unexpected_state";
 
     private readonly StripeClient _stripeClient;
@@ -34,8 +31,6 @@ public class StripePaymentGateway : IPaymentGateway
             Currency = currency,
             Description = description,
             Metadata = new Dictionary<string, string>(metadata),
-            // Načine plaćanja bira Stripe (kartica). Nova verzija Stripe API-ja više ne prima PaymentMethodTypes;
-            // bez preusmjeravanja na stranicu banke, jer se plaća unutar mobilne aplikacije.
             AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
             {
                 Enabled = true,
@@ -67,7 +62,6 @@ public class StripePaymentGateway : IPaymentGateway
         }
         catch (StripeException ex) when (ex.StripeError?.Code == UnexpectedStateCode)
         {
-            // Plaćanje je uspjelo ili je već poništeno; pozivalac odlučuje šta dalje po stvarnom stanju.
             _logger.LogInformation("Payment intent {PaymentIntentId} could not be cancelled: {Message}", paymentIntentId, ex.Message);
             return await GetPaymentIntentAsync(paymentIntentId);
         }
@@ -105,7 +99,6 @@ public class StripePaymentGateway : IPaymentGateway
         }
     }
 
-    // Greška Stripe-a (npr. pogrešan ključ) ili mreže (Stripe nije dostupan, istekao je rok čekanja).
     private static bool IsGatewayError(Exception ex) => ex is StripeException or HttpRequestException or TaskCanceledException;
 
     private PaymentGatewayException Fail(string operation, Exception ex, string userMessage)

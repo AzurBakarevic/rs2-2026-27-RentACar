@@ -15,20 +15,15 @@ using RentACar.WebAPI.Services;
 using RentACar.WebAPI.Services.AccessManager;
 using Scalar.AspNetCore;
 
-// Učitava .env (traži ga od trenutnog foldera naviše); varijable koje su već postavljene (npr. iz Dockera) se ne mijenjaju.
 Env.NoClobber().TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers(options =>
     {
         options.Filters.Add<ExceptionFilter>();
-        // Obavezna polja provjerava FluentValidation (poruke na bosanskom), a ne ugrađena provjera ASP.NET-a.
         options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
     })
-    // Neispravan JSON ili pogrešan tip vrijednosti: isti oblik greške kao iz ExceptionFilter-a.
     .ConfigureApiBehaviorOptions(options => options.InvalidModelStateResponseFactory = ExceptionFilter.InvalidModelState);
 builder.Services.AddRentACarOpenApi();
 builder.Services.AddRentACarDatabase(builder.Configuration);
@@ -39,8 +34,6 @@ builder.Services.AddRentACarMessaging(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
 
-// Mapster mapira svojstva istog naziva; BrandName u odgovoru se puni iz Brand.Name bez dodatne konfiguracije.
-// Ono što se ne može izvesti iz naziva (npr. prosječna ocjena vozila) je u MappingConfig.
 builder.Services.AddMapster();
 TypeAdapterConfig.GlobalSettings.Scan(typeof(MappingConfig).Assembly);
 
@@ -68,13 +61,10 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 
-// PDF izvještaji (QuestPDF): besplatna Community licenca (pojedinci, open-source projekti i firme s prihodom do 1 mil. USD).
 QuestPDF.Settings.License = LicenseType.Community;
 
-// Istek roka za plaćanje (15 min) i podsjetnik dan prije preuzimanja, svake minute.
 builder.Services.AddHostedService<ReservationJobsBackgroundService>();
 
-// Stanja rezervacije (kao ProductStateMachine kod profesora); BaseReservationState bira stanje po statusu.
 builder.Services.AddScoped<BaseReservationState>();
 builder.Services.AddScoped<InitialReservationState>();
 builder.Services.AddScoped<PendingReservationState>();
@@ -119,7 +109,6 @@ var app = builder.Build();
 
 await app.MigrateDatabaseAsync();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

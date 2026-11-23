@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../utils/app_theme.dart';
 
-/// Brojevi stranica (« prva, » posljednja) i dugmad Prethodna/Sljedeća, kao na skicama.
 class PaginationBar extends StatelessWidget {
   const PaginationBar({
     super.key,

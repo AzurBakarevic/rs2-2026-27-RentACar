@@ -13,7 +13,6 @@ class ReservationProvider extends BaseProvider<Reservation> {
     return Reservation.fromJson(data);
   }
 
-  /// Status se mijenja samo kroz akcije state machine-a (upute 7); [reason] ide uz odbijanje i otkazivanje.
   Future<Reservation> performAction(int id, ReservationAction action, {String? reason}) async {
     final uri = BaseProvider.buildUri('$endpoint/$id/${action.apiName}');
     final body = reason == null ? null : jsonEncode({'reason': reason});

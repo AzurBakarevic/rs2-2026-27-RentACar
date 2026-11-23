@@ -8,6 +8,5 @@ public class UserLoginResponse
     public int UserId { get; set; }
     public string Username { get; set; } = string.Empty;
 
-    // Klijent po ulozi bira šta prikazuje (desktop = Administrator, mobilna = Korisnik).
     public string Role { get; set; } = string.Empty;
 }

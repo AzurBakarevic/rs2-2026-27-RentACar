@@ -5,7 +5,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Notifikacije prijavljenog korisnika; mobilna aplikacija ih osvježava pollingom (prijava).
 public class NotificationsController : BaseReadController<NotificationResponse, NotificationSearchObject, INotificationService>
 {
     public NotificationsController(INotificationService notificationService) : base(notificationService)

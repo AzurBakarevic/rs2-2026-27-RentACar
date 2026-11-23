@@ -19,7 +19,6 @@ import 'utils/app_theme.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
-  // 401 s bilo kojeg ekrana (istekao ili poništen token) vraća na prijavu (upute A.2).
   AuthProvider.onSessionExpired = (message) {
     navigatorKey.currentState?.pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => LoginScreen(message: message)),
@@ -58,7 +57,6 @@ class RentACarApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       theme: buildAppTheme(),
-      // Kalendar, birač vremena i ugrađeni tekstovi (npr. „Odustani”) na bosanskom.
       locale: const Locale('bs'),
       supportedLocales: const [Locale('bs')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,

@@ -18,8 +18,6 @@ import '../widgets/form_dialog.dart';
 import '../widgets/vehicle_search_field.dart';
 import 'vehicle_list_screen.dart';
 
-/// Servis vozila (prijava: „Upravljanje servisima vozila”): pretraga po vozilu ili datumu, dodavanje,
-/// izmjena i brisanje. Servis koji se preklapa s rezervacijom ili drugim servisom odbija backend.
 class VehicleMaintenanceScreen extends StatefulWidget {
   const VehicleMaintenanceScreen({super.key});
 
@@ -32,7 +30,6 @@ class VehicleMaintenanceScreen extends StatefulWidget {
 class _VehicleMaintenanceScreenState extends State<VehicleMaintenanceScreen> {
   DateTime? _date;
 
-  // Servisi koji bar dijelom padaju u odabrani dan (od ponoći do ponoći po lokalnom vremenu).
   Map<String, dynamic> get _dateFilter => _date == null
       ? const {}
       : {'from': _date, 'to': DateTime(_date!.year, _date!.month, _date!.day + 1)};
@@ -87,7 +84,6 @@ class _VehicleMaintenanceScreenState extends State<VehicleMaintenanceScreen> {
       context,
       title: item == null ? 'Novi servis' : 'Izmjena servisa',
       formKey: formKey,
-      // Greške servera bez polja su o periodu (preklapanje s rezervacijom ili drugim servisom).
       focusField: 'startAt',
       width: 520,
       initialValue: {
@@ -169,7 +165,6 @@ class _VehicleMaintenanceScreenState extends State<VehicleMaintenanceScreen> {
     );
   }
 
-  // Datum pa vrijeme po lokalnom vremenu; API prima UTC (upute A.4).
   static Widget _dateTimeField({
     required String name,
     required String label,
@@ -188,7 +183,6 @@ class _VehicleMaintenanceScreenState extends State<VehicleMaintenanceScreen> {
   }
 }
 
-/// Slika i naziv vozila u istoj ćeliji (upute 6).
 class _VehicleCell extends StatelessWidget {
   const _VehicleCell({required this.item, required this.provider});
 
@@ -216,7 +210,6 @@ class _VehicleCell extends StatelessWidget {
   }
 }
 
-/// Datum, a ispod njega vrijeme (servis ne mora trajati cijele dane).
 class _DateTimeCell extends StatelessWidget {
   const _DateTimeCell(this.value);
 

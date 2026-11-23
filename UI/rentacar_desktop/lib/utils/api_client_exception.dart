@@ -1,13 +1,10 @@
 import 'dart:convert';
 
-/// Greška koju aplikacija prikazuje korisniku. Poruke dolaze iz API-ja
-/// (ExceptionFilter vraća `{ message, errors }`) ili ih postavlja klijent kad server nije dostupan.
 class ApiClientException implements Exception {
   ApiClientException(this.message, {this.fieldErrors = const {}, this.statusCode});
 
   final String message;
 
-  /// Greške validacije po polju forme; ključ je naziv polja u camelCase obliku (npr. `brandId`).
   final Map<String, String> fieldErrors;
 
   final int? statusCode;
@@ -16,7 +13,6 @@ class ApiClientException implements Exception {
   String toString() => message;
 }
 
-/// API je vratio 401: token je istekao ili je poništen (odjava, promjena lozinke, deaktivacija).
 class UnauthorizedException extends ApiClientException {
   UnauthorizedException(super.message) : super(statusCode: 401);
 }
@@ -24,7 +20,6 @@ class UnauthorizedException extends ApiClientException {
 class ApiErrorParser {
   ApiErrorParser._();
 
-  // Ključevi grešaka koje se ne odnose na jedno polje forme.
   static const _generalErrorKeys = {'clientError', 'serverError'};
 
   static ApiClientException fromResponse(int statusCode, String body, String fallbackMessage) {
@@ -49,8 +44,7 @@ class ApiErrorParser {
           });
         }
       }
-    } on FormatException {
-      // Tijelo odgovora nije JSON (npr. prazan odgovor), pa ostaje opća poruka.
+    } on FormatException catch (_) {
     }
 
     return ApiClientException(
@@ -74,7 +68,6 @@ class ApiErrorParser {
     return null;
   }
 
-  // Backend vraća nazive svojstava kao u C# (npr. "BrandId"), a forme koriste camelCase.
   static String _toCamelCase(String key) =>
       key.isEmpty ? key : key[0].toLowerCase() + key.substring(1);
 }

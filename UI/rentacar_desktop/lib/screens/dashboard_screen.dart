@@ -11,7 +11,6 @@ import '../utils/api_client_exception.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatters.dart';
 
-/// Početni ekran (prijava: Dashboard): ključni pokazatelji i rezervacije po danima za posljednjih sedam dana.
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -46,8 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _isLoading = false;
         });
       }
-    } on UnauthorizedException {
-      // Aplikacija se već vraća na prijavu.
+    } on UnauthorizedException catch (_) {
     } on ApiClientException catch (e) {
       if (mounted) {
         setState(() {
@@ -155,7 +153,6 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-/// Stupčasti grafikon; ispod stupca su dan u sedmici i datum, jer sedam dana završava današnjim danom.
 class _ReservationsChart extends StatelessWidget {
   const _ReservationsChart({required this.days});
 
@@ -165,7 +162,6 @@ class _ReservationsChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final maxCount = days.fold<int>(0, (current, day) => max(current, day.count));
     final interval = _gridInterval(maxCount);
-    // Prostor iznad najvišeg stupca, a bar četiri linije mreže i kad nema rezervacija.
     final maxY = max(interval * 4, ((maxCount * 1.15) / interval).ceil() * interval).toDouble();
 
     return BarChart(
@@ -251,7 +247,6 @@ class _ReservationsChart extends StatelessWidget {
     );
   }
 
-  /// Razmak linija mreže: cijeli broj tako da bude oko četiri linije (1, 2, 3, 5, 10, 20...).
   static int _gridInterval(int maxCount) {
     if (maxCount <= 4) {
       return 1;

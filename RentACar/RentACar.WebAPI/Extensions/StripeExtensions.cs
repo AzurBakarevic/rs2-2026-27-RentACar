@@ -6,8 +6,6 @@ namespace RentACar.WebAPI.Extensions;
 
 public static class StripeExtensions
 {
-    // Stripe poziv se izvršava dok je rezervacija zaključana u bazi, pa se na odgovor ne čeka dugo
-    // (Stripe biblioteka inače čeka do 80 s); uz to Stripe sam ponavlja neuspjeli zahtjev do 2 puta.
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(20);
     private const int MaxNetworkRetries = 2;
 
@@ -19,8 +17,6 @@ public static class StripeExtensions
 
         services.Configure<StripeSettings>(section);
 
-        // Jedan klijent za cijelu aplikaciju (dijeli HTTP konekcije); ključ je iz .env-a, a ne statički
-        // StripeConfiguration.ApiKey kao kod profesora.
         services.AddSingleton(new StripeClient(new StripeClientOptions
         {
             ApiKey = settings.SecretKey,
@@ -32,7 +28,6 @@ public static class StripeExtensions
         return services;
     }
 
-    // Bez ključeva API se ne pokreće, umjesto da padne tek pri prvom plaćanju.
     private static void ValidateSettings(StripeSettings settings)
     {
         if (!settings.SecretKey.StartsWith("sk_", StringComparison.Ordinal))

@@ -8,7 +8,6 @@ public class ReviewInsertValidator : AbstractValidator<ReviewInsertRequest>
     public const int MinRating = 1;
     public const int MaxRating = 5;
 
-    // Kao kolona Comment u bazi (ReviewConfiguration).
     public const int MaxCommentLength = 1000;
 
     public ReviewInsertValidator()

@@ -1,6 +1,5 @@
 namespace RentACar.Model.Requests;
 
-// Prijavljeni korisnik mijenja vlastiti profil. Id se uzima iz tokena, ne iz zahtjeva (upute 5).
 public class UserProfileUpdateRequest : IUserDetails
 {
     public string FirstName { get; set; } = string.Empty;

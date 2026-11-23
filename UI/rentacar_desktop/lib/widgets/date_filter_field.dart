@@ -3,7 +3,6 @@ import 'package:material_ui/material_ui.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatters.dart';
 
-/// Filter po jednom datumu iznad tabele (skica „Servis vozila”); `x` briše odabrani datum.
 class DateFilterField extends StatelessWidget {
   const DateFilterField({super.key, required this.value, required this.onChanged, this.hintText = 'Datum'});
 

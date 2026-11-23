@@ -11,7 +11,6 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
 
         builder.Property(x => x.Comment).HasMaxLength(1000);
 
-        // Jedna recenzija po rezervaciji: FK u odnosu jedan-na-jedan dobija unique indeks.
         builder.HasOne(x => x.Reservation)
             .WithOne(x => x.Review)
             .HasForeignKey<Review>(x => x.ReservationId)

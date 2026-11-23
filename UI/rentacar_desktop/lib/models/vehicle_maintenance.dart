@@ -2,7 +2,6 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'vehicle_maintenance.g.dart';
 
-/// Servis vozila; vremena dolaze u UTC-u, a prikazuju se po lokalnom vremenu.
 @JsonSerializable()
 class VehicleMaintenance {
   final int id;
@@ -12,7 +11,6 @@ class VehicleMaintenance {
   final double cost;
   final int vehicleId;
 
-  /// Marka i model, npr. „Volkswagen Golf”.
   final String vehicleName;
   final String vehicleRegistrationNumber;
   final bool vehicleHasImage;

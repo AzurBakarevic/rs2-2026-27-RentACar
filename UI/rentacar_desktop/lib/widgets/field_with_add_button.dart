@@ -2,7 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../utils/app_theme.dart';
 
-/// Polje za povezani zapis s dugmetom „+” za dodavanje bez napuštanja forme (upute 6).
 class FieldWithAddButton extends StatelessWidget {
   const FieldWithAddButton({
     super.key,
@@ -16,13 +15,11 @@ class FieldWithAddButton extends StatelessWidget {
   final String tooltip;
   final VoidCallback onAdd;
 
-  /// Razlog zbog kojeg dodavanje trenutno nije moguće ili `null`.
   final String? blockedReason;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      // Dugme ostaje uz polje i kad se ispod polja prikaže poruka.
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: field),

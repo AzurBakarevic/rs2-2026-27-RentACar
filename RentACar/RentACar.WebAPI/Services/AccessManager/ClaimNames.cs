@@ -1,6 +1,5 @@
 namespace RentACar.WebAPI.Services.AccessManager;
 
-// Nazivi claimova u JWT tokenu (kao profesorov ClaimNames), da se ne pišu kao stringovi po kodu.
 public static class ClaimNames
 {
     public const string Id = "Id";

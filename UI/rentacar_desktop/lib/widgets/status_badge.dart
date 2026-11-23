@@ -2,7 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../utils/app_theme.dart';
 
-/// Oznaka statusa u tabeli: zelena „● Aktivno” ili crvena „● Neaktivno”, kao na skicama.
 class StatusBadge extends StatelessWidget {
   const StatusBadge({super.key, required this.active, required this.activeLabel, required this.inactiveLabel});
 
@@ -20,7 +19,6 @@ class StatusBadge extends StatelessWidget {
   }
 }
 
-/// Zaobljena oznaka s tačkom u zadanoj boji (aktivnost, status rezervacije).
 class StatusPill extends StatelessWidget {
   const StatusPill({
     super.key,

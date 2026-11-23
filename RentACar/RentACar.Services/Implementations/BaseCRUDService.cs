@@ -7,9 +7,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.Implementations;
 
-// Generičko dodavanje, izmjena i brisanje. Format podataka provjeravaju FluentValidation validatori;
-// poslovna pravila (npr. jedinstven naziv) izvedeni servis dodaje u Before...Async metode
-// i prijavljuje ih kroz ClientException (400).
 public abstract class BaseCRUDService<TEntity, TResponse, TSearch, TInsertRequest, TUpdateRequest>
     : BaseReadService<TEntity, TResponse, TSearch>,
       IBaseCRUDService<TResponse, TSearch, TInsertRequest, TUpdateRequest>
@@ -41,7 +38,6 @@ public abstract class BaseCRUDService<TEntity, TResponse, TSearch, TInsertReques
         _dbContext.Set<TEntity>().Add(entity);
         await _dbContext.SaveChangesAsync();
 
-        // Ponovo čita kroz GetByIdAsync da odgovor ima i podatke iz povezanih tabela (npr. naziv marke).
         return await GetByIdAsync(entity.Id);
     }
 
@@ -61,7 +57,6 @@ public abstract class BaseCRUDService<TEntity, TResponse, TSearch, TInsertReques
         return await GetByIdAsync(id);
     }
 
-    // Fizičko brisanje. Entitet koji se briše logički (npr. korisnik s IsDeleted) treba prepisati ovu metodu.
     public virtual async Task DeleteAsync(int id)
     {
         var entity = await GetQuery().FirstOrDefaultAsync(x => x.Id == id)
@@ -79,12 +74,9 @@ public abstract class BaseCRUDService<TEntity, TResponse, TSearch, TInsertReques
     protected virtual void MapUpdateRequestToEntity(TUpdateRequest request, TEntity entity)
         => _mapper.Map(request, entity);
 
-    // Poziva se nakon mapiranja zahtjeva u novi entitet, prije spremanja.
     protected virtual Task BeforeInsertAsync(TInsertRequest request, TEntity entity) => Task.CompletedTask;
 
-    // Poziva se nakon mapiranja zahtjeva u postojeći entitet, prije spremanja.
     protected virtual Task BeforeUpdateAsync(TUpdateRequest request, TEntity entity) => Task.CompletedTask;
 
-    // Poziva se prije brisanja, npr. da se ne obriše zapis koji koriste drugi zapisi.
     protected virtual Task BeforeDeleteAsync(TEntity entity) => Task.CompletedTask;
 }

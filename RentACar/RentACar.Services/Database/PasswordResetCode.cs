@@ -1,6 +1,5 @@
 namespace RentACar.Services.Database;
 
-// Kod se ne čuva kao tekst, nego kao PBKDF2 hash sa saltom, kao lozinka (upute A.3).
 public class PasswordResetCode
 {
     public int Id { get; set; }

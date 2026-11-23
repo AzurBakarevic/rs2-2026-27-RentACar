@@ -6,7 +6,6 @@ import '../widgets/crud_list_view.dart';
 import '../widgets/data_table_card.dart';
 import 'reference_data_dialog.dart';
 
-/// Tekstovi jednog šifarnika (rod i padež se razlikuju: „Nova marka”, „Novi model”...).
 class ReferenceDataLabels {
   const ReferenceDataLabels({
     required this.newItem,
@@ -23,7 +22,6 @@ class ReferenceDataLabels {
   final String deleted;
 }
 
-/// Jedan tab ekrana Šifarnici: pretraga po nazivu, tabela, paginacija, dodavanje, izmjena i brisanje.
 class ReferenceDataTab<T extends NamedEntity> extends StatelessWidget {
   const ReferenceDataTab({
     super.key,
@@ -38,14 +36,11 @@ class ReferenceDataTab<T extends NamedEntity> extends StatelessWidget {
   final BaseProvider<T> provider;
   final ReferenceDataLabels labels;
 
-  /// Kolone između „Naziv” i „Akcije” (npr. „Marka” kod modela).
   final List<String> extraColumns;
   final List<Widget> Function(T item)? extraCells;
 
-  /// Vlastita forma; bez nje se otvara forma sa samo nazivom.
   final Future<bool> Function(BuildContext context, T? item)? openForm;
 
-  /// Preduslovi za novi zapis (npr. marka za model).
   final Future<String?> Function()? newBlockedReason;
 
   @override

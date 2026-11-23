@@ -28,7 +28,6 @@ public class ReportService : IReportService
         var (from, to) = await ValidatePeriodAsync(request);
         var (fromUtc, toUtc) = ToUtcRange(from, to);
 
-        // Jedan upit: iz baze se čitaju samo kolone koje su u izvještaju, a uplaćeni iznos se sabira u bazi.
         var rows = await _dbContext.Reservations
             .AsNoTracking()
             .Where(x => x.PickupAt >= fromUtc && x.PickupAt < toUtc)
@@ -63,8 +62,6 @@ public class ReportService : IReportService
         var (from, to) = await ValidatePeriodAsync(request);
         var (fromUtc, toUtc) = ToUtcRange(from, to);
 
-        // Grupisanje u bazi (upute 8.2) polazi od uplata: rezervacija ima najviše jednu plaćenu uplatu
-        // (jedinstveni indeks), pa je broj uplata u grupi broj rezervacija vozila.
         var rows = await _dbContext.Payments
             .AsNoTracking()
             .Where(x => x.Status == PaymentStatus.Paid
@@ -106,7 +103,6 @@ public class ReportService : IReportService
         return (request.From!.Value, request.To!.Value);
     }
 
-    // Od ponoći prvog do ponoći poslije posljednjeg dana, po lokalnom vremenu agencije.
     private static (DateTime From, DateTime To) ToUtcRange(DateOnly from, DateOnly to)
         => (AgencyTime.StartOfDayUtc(from), AgencyTime.StartOfDayUtc(to.AddDays(1)));
 }

@@ -9,7 +9,6 @@ using RentACar.WebAPI.Extensions;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Čitaju svi prijavljeni (korisnik vidi samo aktivna vozila), a mijenja samo administrator.
 public class VehiclesController
     : BaseCRUDController<VehicleResponse, VehicleSearchObject, VehicleInsertRequest, VehicleUpdateRequest, IVehicleService>
 {
@@ -29,7 +28,6 @@ public class VehiclesController
     public override Task<IActionResult> Delete(int id)
         => base.Delete(id);
 
-    // Slika kao fajl (ne base64), pa je klijent učitava po URL-u samo kad je prikazuje (upute 8.2).
     [HttpGet("{id:int}/Image")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -39,7 +37,6 @@ public class VehiclesController
         return File(image.Content, image.ContentType);
     }
 
-    // Slika se šalje kao multipart/form-data (polje "image"), da uz sadržaj stigne i MIME tip (upute 5).
     [Authorize(Roles = RoleNames.Administrator)]
     [HttpPut("{id:int}/Image")]
     [Consumes("multipart/form-data")]

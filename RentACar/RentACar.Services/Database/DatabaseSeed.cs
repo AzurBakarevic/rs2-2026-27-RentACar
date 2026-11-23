@@ -5,7 +5,6 @@ namespace RentACar.Services.Database;
 
 public static class DatabaseSeed
 {
-    // HasData traži fiksne vrijednosti, inače bi svaka nova migracija mijenjala seed.
     internal static readonly DateTime SeedDate = new(2026, 11, 1, 0, 0, 0, DateTimeKind.Utc);
 
     public static void Seed(this ModelBuilder modelBuilder)
@@ -14,8 +13,6 @@ public static class DatabaseSeed
             new Role { Id = 1, Name = RoleNames.Administrator },
             new Role { Id = 2, Name = RoleNames.Customer });
 
-        // Testni nalozi iz uputa 5 (lozinka za oba: "test"). Hash i salt su unaprijed izračunati
-        // istim algoritmom kao CryptoService (PBKDF2-SHA256, 100 000 iteracija), jer HasData traži fiksne vrijednosti.
         modelBuilder.Entity<User>().HasData(
             new User
             {

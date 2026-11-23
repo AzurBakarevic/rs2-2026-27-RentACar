@@ -18,7 +18,6 @@ public class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
         builder.Property(x => x.EquipmentPrice).HasPrecision(10, 2);
         builder.Property(x => x.TotalPrice).HasPrecision(10, 2);
 
-        // Provjera zauzetosti vozila i preklapanja rezervacija korisnika ide po ovim kolonama.
         builder.HasIndex(x => new { x.VehicleId, x.PickupAt, x.ReturnAt });
         builder.HasIndex(x => new { x.UserId, x.PickupAt });
         builder.HasIndex(x => x.Status);

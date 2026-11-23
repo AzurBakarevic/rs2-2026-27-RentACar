@@ -25,8 +25,6 @@ import '../widgets/form_close_button.dart';
 import 'reference_data_dialog.dart';
 import 'vehicle_list_screen.dart';
 
-/// Dodavanje i izmjena vozila (prijava: marka, model, kategorija, gorivo i mjenjač iz padajućih lista,
-/// godina proizvodnje, broj sjedišta, opis, cijena, status i slika). Vraća `true` ako je vozilo sačuvano.
 class VehicleDetailsScreen extends StatefulWidget {
   const VehicleDetailsScreen({super.key, this.vehicle});
 
@@ -37,19 +35,15 @@ class VehicleDetailsScreen extends StatefulWidget {
 }
 
 class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
-  // Ista granica kao na backendu (ImageUploadValidator); provjerava se prije slanja.
   static const int _maxImageBytes = 2 * 1024 * 1024;
   static const Map<String, String> _imageContentTypes = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png'};
 
-  // Najveća dozvoljena stranica (upute 8.2); šifarnika je u praksi mnogo manje.
   static const Map<String, dynamic> _referenceFilter = {'pageSize': 100};
 
   final _formKey = GlobalKey<FormBuilderState>();
 
-  /// Sačuvano vozilo; za novo je `null` dok se prvi put ne sačuva.
   Vehicle? _vehicle;
 
-  /// Vozilo je sačuvano bar jednom, pa lista mora ponovo učitati podatke i kad se ekran zatvori bez slike.
   bool _wasSaved = false;
 
   List<DropdownMenuItem<int>> _brands = [];
@@ -88,7 +82,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
 
     final vehicle = _vehicle;
     try {
-      // Šifarnici se učitavaju paralelno (upute A.2); modeli samo za marku vozila koje se mijenja.
       final results = await Future.wait<SearchResult<NamedEntity>>([
         context.read<BrandProvider>().get(filter: _referenceFilter),
         context.read<CategoryProvider>().get(filter: _referenceFilter),
@@ -108,8 +101,7 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
         _models = vehicle == null ? [] : _toItems(results[4], vehicle.vehicleModelId, vehicle.vehicleModelName);
         _isLoading = false;
       });
-    } on UnauthorizedException {
-      // Aplikacija se već vraća na prijavu.
+    } on UnauthorizedException catch (_) {
     } on ApiClientException catch (e) {
       if (mounted) {
         setState(() {
@@ -120,7 +112,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
     }
   }
 
-  // Vrijednost vozila koje se mijenja mora biti u listi i kad nije na prvoj stranici šifarnika.
   static List<DropdownMenuItem<int>> _toItems(SearchResult<NamedEntity> result, int? currentId, String? currentName) {
     final items = [
       for (final item in result.items ?? <NamedEntity>[])
@@ -134,7 +125,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
 
   Future<void> _onBrandChanged(int? brandId) async {
     final requestId = ++_modelsRequestId;
-    // Model prethodne marke više ne važi; vrijednost se briše prije nego što se promijeni lista.
     _formKey.currentState?.fields['vehicleModelId']?.didChange(null);
     setState(() {
       if (_modelsFailed) {
@@ -158,8 +148,7 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
         _models = _toItems(result, null, null);
         _isLoadingModels = false;
       });
-    } on UnauthorizedException {
-      // Aplikacija se već vraća na prijavu.
+    } on UnauthorizedException catch (_) {
     } on ApiClientException catch (e) {
       _showModelsError(requestId, e.message);
     } catch (e) {
@@ -227,7 +216,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
     await _selectAdded('vehicleModelId', model.id, 'Model je sačuvan.');
   }
 
-  // Promjena liste vraća polje na početnu vrijednost, pa se novi zapis bira tek poslije nje.
   Future<void> _selectAdded(String field, int id, String message) async {
     await WidgetsBinding.instance.endOfFrame;
     if (mounted) {
@@ -248,7 +236,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
       child: Stack(
         children: [
           Positioned.fill(child: _buildBody()),
-          // U desnoj margini forme i izvan dijela koji se pomjera.
           Positioned(top: 8, right: 16, child: FormCloseButton(isSaving: _isSaving, onClose: _close)),
         ],
       ),
@@ -273,7 +260,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
     }
 
     final vehicle = widget.vehicle;
-    // Početni model važi samo dok je u listi; padajuća lista ne prihvata početnu vrijednost izvan liste.
     final modelInList = _models.any((item) => item.value == vehicle?.vehicleModelId);
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(64, 32, 64, 32),
@@ -295,7 +281,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Poruka je uvijek na istom mjestu, da se polja ispod nje ne naprave iznova.
             _buildError(),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -393,7 +378,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
           FormBuilderTextField(
             name: 'productionYear',
             decoration: const InputDecoration(labelText: 'Godina proizvodnje'),
-            // Najviše sljedeća godina, kao na backendu (modeli koji se prodaju unaprijed).
             validator: integerValidator(
               requiredMessage: 'Godina proizvodnje je obavezna.',
               min: 1990,
@@ -441,7 +425,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
           minLines: 3,
           maxLines: 6,
           validator: maxLengthText(1000, 'Opis može imati najviše 1000 znakova.'),
-          // Prazan opis se šalje kao null.
           valueTransformer: (value) => (value?.trim().isEmpty ?? true) ? null : value!.trim(),
         ),
       ],
@@ -472,12 +455,10 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
   }) {
     return FormBuilderDropdown<int>(
       name: name,
-      // Natpis ide iznad polja dok je prikazana poruka, inače bi se preklopili.
       decoration: InputDecoration(
         labelText: label,
         floatingLabelBehavior: hint == null ? null : FloatingLabelBehavior.always,
       ),
-      // Poruka objašnjava zašto je lista prazna (onemogućena); u užem polju se smanji umjesto da se prelomi.
       disabledHint: hint == null
           ? null
           : FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(hint)),
@@ -485,7 +466,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
       borderRadius: BorderRadius.circular(8),
       iconEnabledColor: AppColors.textMuted,
       items: items,
-      // Odabrani naziv stane u jedan red; cijeli se vidi u otvorenoj listi.
       selectedItemBuilder: (_) => [
         for (final item in items)
           DefaultTextStyle.merge(
@@ -502,7 +482,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
   Widget _buildImagePanel() {
     final Widget preview;
     if (_imageBytes != null) {
-      // Fajl s ekstenzijom .png/.jpg ne mora biti ispravna slika; server ga tada odbija pri spremanju.
       preview = Image.memory(_imageBytes!, fit: BoxFit.cover, errorBuilder: (_, _, _) => const ImagePlaceholder());
     } else if (_vehicle?.hasImage ?? false) {
       preview = VehicleImage(
@@ -568,7 +547,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
       }
       return;
     }
-    // Ekran se može zatvoriti dok je prozor za odabir fajla otvoren.
     if (file == null || !mounted) {
       return;
     }
@@ -578,7 +556,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
       setState(() => _imageError = 'Dozvoljene su samo slike u formatu JPG ili PNG.');
       return;
     }
-    // Veličina se provjerava prije čitanja i slanja; veliki upload bi inače čekao odgovor servera.
     final length = await file.length();
     if (!mounted) {
       return;
@@ -621,7 +598,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
     });
 
     final provider = context.read<VehicleProvider>();
-    // Marka se ne šalje: određena je modelom.
     final values = Map<String, dynamic>.from(form.value)..remove('brandId');
     try {
       final current = _vehicle;
@@ -652,7 +628,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
     if (_imageBytes != null) {
       try {
         await provider.updateImage(_vehicle!.id, _imageBytes!, fileName: _imageName!, contentType: _imageContentType!);
-        // Stara slika je u memoriji pod istim URL-om, pa bi se u listi i dalje prikazivala.
         PaintingBinding.instance.imageCache
           ..clear()
           ..clearLiveImages();
@@ -675,7 +650,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
 
   void _showImageSaveError(String message) {
     if (mounted) {
-      // Podaci su sačuvani, pa se ekran prebacuje u izmjenu; ponovni klik šalje samo izmjene i sliku.
       setState(() {
         _isSaving = false;
         _error = 'Podaci vozila su sačuvani, ali slika nije: $message';

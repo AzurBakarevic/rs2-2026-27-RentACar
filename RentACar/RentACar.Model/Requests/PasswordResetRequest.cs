@@ -1,6 +1,5 @@
 namespace RentACar.Model.Requests;
 
-// Drugi korak reseta lozinke (prijava): kod iz e-maila i nova lozinka.
 public class PasswordResetRequest
 {
     public string Email { get; set; } = string.Empty;

@@ -4,9 +4,6 @@ using RentACar.Services.Database;
 
 namespace RentACar.Services.Helpers;
 
-// Tekstovi notifikacija o rezervaciji (prijava, "Notifikacije"): kreiranje, uspješno plaćanje, potvrda, odbijanje ili
-// otkazivanje uz razlog, povrat novca, završetak najma uz poziv na recenziju i podsjetnik dan prije preuzimanja.
-// Notifikacija se upisuje u istoj transakciji kao i promjena koju opisuje.
 public static class ReservationNotifications
 {
     private const int MaxMessageLength = 500;
@@ -38,7 +35,6 @@ public static class ReservationNotifications
         "Rezervacija otkazana",
         $"Otkazali ste rezervaciju vozila {vehicleName} za period {Period(reservation)}.");
 
-    // Sistem otkazuje rezervaciju koja nije plaćena u roku (razlog se vidi i u detaljima rezervacije).
     public static Notification Expired(Reservation reservation, string vehicleName) => Create(reservation,
         "Rezervacija otkazana",
         $"Rezervacija vozila {vehicleName} za period {Period(reservation)} je otkazana. Razlog: {PaymentRules.ExpiredReason}");
@@ -57,7 +53,6 @@ public static class ReservationNotifications
         "Najam završen",
         $"Najam vozila {vehicleName} je završen. Ocijenite vozilo i ostavite recenziju u detaljima rezervacije.");
 
-    // Naziv statusa kako ga korisnik vidi u aplikacijama.
     public static string StatusName(ReservationStatus status) => status switch
     {
         ReservationStatus.Pending => "Na čekanju",
@@ -78,7 +73,6 @@ public static class ReservationNotifications
     private static string Period(Reservation reservation)
         => $"{AgencyTime.Format(reservation.PickupAt)} – {AgencyTime.Format(reservation.ReturnAt)}";
 
-    // Npr. "225,00".
     private static string Amount(decimal amount)
         => amount.ToString("0.00", CultureInfo.InvariantCulture).Replace('.', ',');
 }

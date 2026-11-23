@@ -6,8 +6,6 @@ using RentACar.Services.Helpers;
 
 namespace RentACar.Services.Mapping;
 
-// Mapiranja koja Mapster ne može izvesti iz naziva svojstava. Koriste se u ProjectToType,
-// pa se i ovi izrazi prevode u SQL (npr. prosječna ocjena se računa u bazi, bez učitavanja recenzija).
 public class MappingConfig : IRegister
 {
     public void Register(TypeAdapterConfig config)
@@ -15,7 +13,6 @@ public class MappingConfig : IRegister
         config.NewConfig<Vehicle, VehicleResponse>()
             .Map(dest => dest.BrandId, src => src.VehicleModel.BrandId)
             .Map(dest => dest.BrandName, src => src.VehicleModel.Brand.Name)
-            // Iz baze se čita samo da li slika postoji, a ne njeni bajtovi.
             .Map(dest => dest.HasImage, src => src.Image != null)
             .Map(dest => dest.AverageRating,
                 src => src.Reservations.Where(r => r.Review != null).Average(r => (double?)r.Review!.Rating))
@@ -23,7 +20,6 @@ public class MappingConfig : IRegister
             .Map(dest => dest.DeleteBlockedReason,
                 src => src.Reservations.Any() ? DeleteBlockedReasons.VehicleHasReservations : null);
 
-        // Da li se zapis koristi računa se u istom upitu kao lista, bez upita po redu (upute 8.2).
         config.NewConfig<Brand, BrandResponse>()
             .Map(dest => dest.DeleteBlockedReason,
                 src => src.Models.Any() ? DeleteBlockedReasons.BrandHasModels : null);
@@ -48,7 +44,6 @@ public class MappingConfig : IRegister
             .Map(dest => dest.DeleteBlockedReason,
                 src => src.ReservationItems.Any() ? DeleteBlockedReasons.EquipmentInUse : null);
 
-        // Kao kod vozila: iz baze se čita samo da li slika profila postoji.
         config.NewConfig<User, UserResponse>()
             .Map(dest => dest.HasProfileImage, src => src.ProfileImage != null);
 
@@ -56,8 +51,6 @@ public class MappingConfig : IRegister
             .Map(dest => dest.VehicleName, src => src.Vehicle.VehicleModel.Brand.Name + " " + src.Vehicle.VehicleModel.Name)
             .Map(dest => dest.VehicleHasImage, src => src.Vehicle.Image != null);
 
-        // Oprema, uplata i historija statusa se ne mapiraju ovdje: puni ih samo GetByIdAsync, posebnim upitima,
-        // da lista rezervacija ne čita te tabele. Akcije i njihove razloge računa state machine, a rok za plaćanje servis.
         config.NewConfig<Reservation, ReservationResponse>()
             .Map(dest => dest.UserFullName, src => src.User.FirstName + " " + src.User.LastName)
             .Map(dest => dest.UserHasImage, src => !src.User.IsDeleted && src.User.ProfileImage != null)
@@ -74,7 +67,6 @@ public class MappingConfig : IRegister
             .Ignore(dest => dest.Equipment!)
             .Ignore(dest => dest.StatusHistory!);
 
-        // Korisnik i vozilo recenzije su korisnik i vozilo rezervacije za koju je ostavljena.
         config.NewConfig<Review, ReviewResponse>()
             .Map(dest => dest.UserId, src => src.Reservation.UserId)
             .Map(dest => dest.UserFullName, src => src.Reservation.User.FirstName + " " + src.Reservation.User.LastName)
@@ -86,7 +78,6 @@ public class MappingConfig : IRegister
         config.NewConfig<ReservationEquipment, ReservationEquipmentResponse>()
             .Map(dest => dest.TotalPrice, src => src.Quantity * src.PricePerDay * src.Reservation.RentalDays);
 
-        // null = promjenu je izvršio sistem.
         config.NewConfig<ReservationStatusHistory, ReservationStatusHistoryResponse>()
             .Map(dest => dest.ChangedByName,
                 src => src.ChangedByUser != null ? src.ChangedByUser.FirstName + " " + src.ChangedByUser.LastName : null);

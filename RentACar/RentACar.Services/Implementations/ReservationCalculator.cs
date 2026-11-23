@@ -7,9 +7,6 @@ using RentACar.Services.Helpers;
 
 namespace RentACar.Services.Implementations;
 
-// Provjerava da li korisnik može rezervisati vozilo i opremu u traženom periodu i računa cijenu (prijava: "Rezervacija vozila").
-// Koriste ga obračun prije potvrde i kreiranje rezervacije, pa se upiše isti iznos koji je korisnik vidio.
-// Format zahtjeva (vrijeme u budućnosti, trajanje, količine) već je provjerio ReservationInsertValidator.
 public class ReservationCalculator
 {
     private readonly RentACarDbContext _dbContext;
@@ -24,7 +21,6 @@ public class ReservationCalculator
         var pickupAt = AgencyTime.AsUtc(request.PickupAt);
         var returnAt = AgencyTime.AsUtc(request.ReturnAt);
 
-        // Deaktivirano vozilo je uklonjeno iz ponude, pa se ne može ni rezervisati.
         var vehicle = await _dbContext.Vehicles
             .AsNoTracking()
             .Where(x => x.Id == request.VehicleId && x.IsActive)
@@ -34,7 +30,6 @@ public class ReservationCalculator
 
         await EnsureDriverLicenseIsValidAsync(userId, returnAt);
 
-        // Dva perioda se preklapaju ako svaki počinje prije nego što drugi završi.
         if (await _dbContext.Reservations.AnyAsync(x => x.VehicleId == vehicle.Id
                                                        && ReservationStatuses.Active.Contains(x.Status)
                                                        && x.PickupAt < returnAt
@@ -79,8 +74,6 @@ public class ReservationCalculator
         };
     }
 
-    // Prijava: rezervacija nije moguća bez podataka o vozačkoj dozvoli ni ako dozvola ističe prije kraja najma.
-    // Dozvola važi do kraja dana upisanog u "važi do".
     private async Task EnsureDriverLicenseIsValidAsync(int userId, DateTime returnAt)
     {
         var license = await _dbContext.Users
@@ -101,7 +94,6 @@ public class ReservationCalculator
         }
     }
 
-    // Aktivne sezonske cijene koje pokrivaju bar jedan dan najma.
     private async Task<List<SeasonalPrice>> GetSeasonsAsync(DateTime pickupAt, int rentalDays)
     {
         var firstDate = AgencyTime.ToLocalDate(pickupAt);
@@ -116,7 +108,6 @@ public class ReservationCalculator
     private async Task<List<ReservationEquipmentResponse>> CalculateEquipmentAsync(
         List<ReservationEquipmentRequest> requested, DateTime pickupAt, DateTime returnAt, int rentalDays)
     {
-        // Ista oprema navedena više puta se sabira (kao kod profesorovog checkouta).
         var items = requested
             .GroupBy(x => x.EquipmentId)
             .Select(g => new { EquipmentId = g.Key, Quantity = g.Sum(x => x.Quantity) })
@@ -134,7 +125,6 @@ public class ReservationCalculator
             .Where(x => ids.Contains(x.Id) && x.IsActive)
             .ToListAsync();
 
-        // Oprema u aktivnim rezervacijama koje se preklapaju s traženim periodom (filtrirano u bazi).
         var bookings = await _dbContext.ReservationEquipment
             .AsNoTracking()
             .Where(x => ids.Contains(x.EquipmentId)
@@ -173,10 +163,6 @@ public class ReservationCalculator
         return result.OrderBy(x => x.EquipmentName).ToList();
     }
 
-    // Najveća količina koja je u traženom periodu rezervisana u istom trenutku. Zauzetost raste samo kad počne
-    // neka rezervacija, pa je dovoljno provjeriti početak traženog perioda i početke rezervacija unutar njega.
-    // Zbir svih preklapajućih rezervacija bi bio pogrešan: dvije rezervacije koje se međusobno ne preklapaju
-    // ne zauzimaju opremu u isto vrijeme.
     private static int GetPeakBookedQuantity(List<EquipmentBooking> bookings, DateTime from, DateTime to)
     {
         return bookings

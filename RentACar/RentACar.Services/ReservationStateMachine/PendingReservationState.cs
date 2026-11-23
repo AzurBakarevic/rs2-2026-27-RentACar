@@ -9,8 +9,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.ReservationStateMachine;
 
-// Na čekanju: korisnik je plaća (u roku od 15 minuta) ili otkazuje, a administrator potvrđuje (samo plaćenu) ili odbija.
-// Neplaćenu rezervaciju nakon isteka roka otkazuje pozadinski posao.
 public class PendingReservationState : BaseReservationState
 {
     private readonly ReservationPaymentHandler _paymentHandler;
@@ -22,8 +20,6 @@ public class PendingReservationState : BaseReservationState
         _paymentHandler = paymentHandler;
     }
 
-    // Prijava: potvrditi se može samo plaćena rezervacija. Plaćanje se prvo provjerava kod Stripe-a,
-    // za slučaj da je korisnik platio, a aplikacija to nije stigla javiti serveru.
     public override async Task ConfirmAsync(Reservation reservation)
     {
         var payment = await _paymentHandler.SyncAsync(reservation);
@@ -32,7 +28,6 @@ public class PendingReservationState : BaseReservationState
         await ChangeStatusAsync(reservation, ReservationStatus.Confirmed, null, ReservationNotifications.Confirmed);
     }
 
-    // Prijava: odbijena rezervacija prelazi u status Otkazana, uz obavezan razlog, a uplaćeni iznos se vraća.
     public override async Task RejectAsync(Reservation reservation, string reason)
     {
         await ChangeStatusAsync(reservation, ReservationStatus.Cancelled, reason,
@@ -43,7 +38,6 @@ public class PendingReservationState : BaseReservationState
 
     public override async Task CancelAsync(Reservation reservation, string? reason)
     {
-        // Prijava: rezervaciju na čekanju administrator potvrđuje ili odbija; otkazati može samo potvrđenu.
         if (IsAdministrator)
         {
             throw new ClientException("Rezervaciju na čekanju odbijte umjesto otkazivanja.");
@@ -53,8 +47,6 @@ public class PendingReservationState : BaseReservationState
         await _paymentHandler.ReleaseAsync(reservation);
     }
 
-    // Prijava: rezervacija koja nije plaćena u roku od 15 minuta od kreiranja prelazi u status Otkazana.
-    // Prije otkazivanja se provjerava Stripe: ako je korisnik platio, a aplikacija to nije javila, rezervacija ostaje.
     public override async Task<bool> ExpireAsync(Reservation reservation)
     {
         if (DateTime.UtcNow < PaymentRules.GetPaymentDeadline(reservation.CreatedAt))
@@ -80,7 +72,6 @@ public class PendingReservationState : BaseReservationState
         {
             var actions = CustomerActions(reservation);
 
-            // Dok rezervacija nije plaćena, a rok nije istekao, plaćanje se može (ponovo) pokrenuti iz detalja (prijava).
             if (!reservation.IsPaid && DateTime.UtcNow < reservation.PaymentDeadline)
             {
                 actions.Insert(0, ReservationActions.Pay);

@@ -7,12 +7,6 @@ import '../utils/form_errors.dart';
 import '../utils/utils_widgets.dart';
 import 'form_close_button.dart';
 
-/// Forma u dijalogu (šifarnici, oprema, servisi, sezonske cijene). [buildFields] dobija funkciju
-/// za slanje forme (npr. na Enter u tekstualnom polju). Vraća `true` ako je zapis sačuvan.
-///
-/// [formKey] treba kad jedno polje provjerava drugo (npr. kraj servisa poslije početka).
-/// [focusField] dobija fokus poslije greške servera koja nije uz neko polje.
-/// Za potvrdu akcije se zadaju [confirmLabel] i, kad je nepovratna, [destructive].
 Future<bool> showFormDialog(
   BuildContext context, {
   required String title,
@@ -88,7 +82,6 @@ class _FormDialogState extends State<_FormDialog> {
           ],
         ),
       ),
-      // Pomjeraju se samo polja: naslov i „X” ostaju vidljivi, a traka za pomjeranje je pored polja.
       contentPadding: EdgeInsets.zero,
       content: SizedBox(
         width: widget.width + 48,
@@ -101,8 +94,6 @@ class _FormDialogState extends State<_FormDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Poruka je uvijek na istom mjestu u listi, inače bi se polja ispod nje
-                // napravila iznova i izgubila fokus.
                 _buildError(),
                 for (var i = 0; i < fields.length; i++) ...[
                   if (i > 0) const SizedBox(height: 16),
@@ -164,8 +155,7 @@ class _FormDialogState extends State<_FormDialog> {
       if (mounted) {
         closeForm(context, saved: true);
       }
-    } on UnauthorizedException {
-      // Aplikacija se već vraća na prijavu.
+    } on UnauthorizedException catch (_) {
     } on ApiClientException catch (e) {
       if (!mounted) {
         return;

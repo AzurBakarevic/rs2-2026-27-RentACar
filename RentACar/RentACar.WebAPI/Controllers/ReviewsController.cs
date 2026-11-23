@@ -8,8 +8,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Čitaju svi prijavljeni (mobilna: recenzije u detaljima vozila; desktop: pregled svih recenzija).
-// Recenziju ostavlja korisnik (mobilna aplikacija), a uklanja administrator; izmjene nema.
 public class ReviewsController : BaseReadController<ReviewResponse, ReviewSearchObject, IReviewService>
 {
     public ReviewsController(IReviewService reviewService) : base(reviewService)

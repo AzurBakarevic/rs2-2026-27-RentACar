@@ -3,8 +3,6 @@ import 'package:flutter/foundation.dart';
 import '../providers/base_provider.dart';
 import 'api_client_exception.dart';
 
-/// Stanje jedne tabelarne liste: filter, trenutna stranica, ukupan broj zapisa i greška.
-/// Backend vraća najviše 100 zapisa po stranici, pa se lista uvijek učitava po stranicama.
 class PagedListController<T> extends ChangeNotifier {
   PagedListController(this._provider, {this.pageSize = 10});
 
@@ -18,7 +16,6 @@ class PagedListController<T> extends ChangeNotifier {
   bool isLoading = false;
   String? error;
 
-  // Odgovor starijeg zahtjeva (npr. dok se kuca u pretragu) ne smije prepisati noviji.
   int _requestId = 0;
   bool _disposed = false;
 
@@ -44,14 +41,12 @@ class PagedListController<T> extends ChangeNotifier {
       totalCount = result.totalCount ?? 0;
       items = result.items ?? [];
 
-      // Nakon brisanja posljednjeg zapisa na stranici prelazi se na posljednju postojeću stranicu.
       if (items.isEmpty && page > 1 && totalCount > 0) {
         page = pageCount;
         await load();
         return;
       }
     } on UnauthorizedException {
-      // Aplikacija se već vraća na prijavu.
       return;
     } on ApiClientException catch (e) {
       if (requestId != _requestId) {

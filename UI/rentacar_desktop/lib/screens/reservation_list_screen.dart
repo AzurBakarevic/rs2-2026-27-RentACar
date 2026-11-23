@@ -23,8 +23,6 @@ import 'reservation_action_dialog.dart';
 import 'reservation_details_screen.dart';
 import 'vehicle_list_screen.dart';
 
-/// Rezervacije (prijava: „Upravljanje rezervacijama”): pretraga po korisniku ili vozilu, filter po datumu
-/// i statusu, akcije state machine-a i detalji. Rezervacije se ne dodaju i ne brišu s desktopa.
 class ReservationListScreen extends StatefulWidget {
   const ReservationListScreen({super.key});
 
@@ -35,7 +33,6 @@ class ReservationListScreen extends StatefulWidget {
 }
 
 class _ReservationListScreenState extends State<ReservationListScreen> {
-  // Omjeri su širine u pikselima pri najmanjoj širini okvira (1280), da naslovi i dugmad stanu.
   static const List<TableColumnDef> _columns = [
     TableColumnDef('Korisnik', flex: 140),
     TableColumnDef('Vozilo', flex: 160),
@@ -69,7 +66,6 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
     super.dispose();
   }
 
-  // Za datum: najmovi koji bar dijelom padaju u taj dan (od ponoći do ponoći po lokalnom vremenu).
   Map<String, dynamic> _buildFilter() {
     final date = _date;
     return {
@@ -196,8 +192,6 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
     }
   }
 
-  // Lista se osvježava i kad akcija nije uspjela: stanje je mogao promijeniti korisnik ili pozadinski posao,
-  // a kod isteka čekanja server je akciju možda ipak izvršio.
   Future<void> _perform(Reservation item, ReservationAction action) async {
     final done = await showReservationActionDialog(context, item, action);
     if (!mounted) {
@@ -248,7 +242,6 @@ class _StatusFilter extends StatelessWidget {
   }
 }
 
-/// Slika i naziv u istoj ćeliji (upute 6).
 class _ImageTextCell extends StatelessWidget {
   const _ImageTextCell({required this.image, required this.text, this.details});
 
@@ -295,7 +288,6 @@ class _ImageTextCell extends StatelessWidget {
   }
 }
 
-/// Datum, a ispod njega vrijeme, kao na ekranu Servis vozila.
 class _DateTimeCell extends StatelessWidget {
   const _DateTimeCell(this.value);
 
@@ -313,7 +305,6 @@ class _DateTimeCell extends StatelessWidget {
   }
 }
 
-/// Iznos i jasna oznaka da li je plaćen (prijava, upute 7.1).
 class _AmountCell extends StatelessWidget {
   const _AmountCell(this.reservation);
 

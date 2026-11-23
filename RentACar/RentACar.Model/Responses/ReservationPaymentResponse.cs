@@ -2,7 +2,6 @@ using RentACar.Model.Enums;
 
 namespace RentACar.Model.Responses;
 
-// Podaci o uplati u detaljima rezervacije (prijava: "podaci o uplati", "stanje plaćanja").
 public class ReservationPaymentResponse
 {
     public int Id { get; set; }

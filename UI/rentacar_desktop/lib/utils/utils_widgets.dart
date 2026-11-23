@@ -18,7 +18,6 @@ Future<void> alertBox(BuildContext context, String title, String content) {
   );
 }
 
-/// Vraća `true` samo ako korisnik potvrdi akciju.
 Future<bool> confirmDialog(
   BuildContext context, {
   required String title,
@@ -47,18 +46,14 @@ Future<bool> confirmDialog(
   return confirmed ?? false;
 }
 
-/// Razlog uz akcije koje su onemogućene dok traje spremanje.
 const String savingInProgressReason = 'Sačekajte da se spremanje završi.';
 
-/// Greška spremanja koju API nije opisao (npr. nečitljiv odgovor); zapis je možda ipak sačuvan.
 const String unexpectedSaveError =
     'Spremanje nije potvrđeno zbog neočekivane greške. Provjerite listu prije ponovnog pokušaja.';
 
-/// Zatvara formu kojoj pripada [context], i kad je iznad nje u međuvremenu otvoren meni ili kalendar.
 void closeForm(BuildContext context, {required bool saved}) {
   final navigator = Navigator.of(context);
   final route = ModalRoute.of(context);
-  // Forma je već uklonjena (npr. istekla sesija); zatvaranje bi uklonilo i ekran prijave.
   if (route == null || !route.isActive) {
     return;
   }
@@ -72,7 +67,6 @@ void showSnack(BuildContext context, String message) {
     ..showSnackBar(SnackBar(content: Text(message)));
 }
 
-/// Validator za obavezan tekst s najvećom dužinom (ista pravila kao FluentValidation na backendu).
 String? Function(String?) requiredText(String message, {int? maxLength, String? maxLengthMessage}) {
   return (value) {
     final text = value?.trim() ?? '';
@@ -86,7 +80,6 @@ String? Function(String?) requiredText(String message, {int? maxLength, String? 
   };
 }
 
-/// Dekoracija polja bez okvira (prekidač „Aktivno” u formi), jer tema svim poljima daje okvir.
 const InputDecoration plainFieldDecoration = InputDecoration(
   border: InputBorder.none,
   enabledBorder: InputBorder.none,

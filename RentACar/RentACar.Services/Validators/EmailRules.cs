@@ -6,7 +6,6 @@ public static class EmailRules
 {
     public const int MaxLength = 100;
 
-    // Ista pravila za e-mail u svim zahtjevima (upute 4: format e-maila).
     public static IRuleBuilderOptions<T, string?> ValidEmail<T>(this IRuleBuilder<T, string?> rule)
     {
         return rule

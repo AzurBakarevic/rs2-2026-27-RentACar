@@ -3,7 +3,6 @@ using RentACar.Model.Requests;
 
 namespace RentACar.Services.Validators;
 
-// Samo da polja nisu prazna; pravila za dužinu lozinke se ovdje ne primjenjuju (testna lozinka je "test").
 public class UserLoginValidator : AbstractValidator<UserLoginRequest>
 {
     public UserLoginValidator()

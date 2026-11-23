@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 
-// Boje iz skica u prijavi.
 class AppColors {
   AppColors._();
 
@@ -71,7 +70,6 @@ ThemeData buildAppTheme() {
       unselectedLabelStyle: TextStyle(fontSize: 16),
       dividerColor: AppColors.border,
     ),
-    // Bijele površine kao na skicama (Material 3 ih inače boji nijansom primarne boje).
     dialogTheme: DialogThemeData(
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,

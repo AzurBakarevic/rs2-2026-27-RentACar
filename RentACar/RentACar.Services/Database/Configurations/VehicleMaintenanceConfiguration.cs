@@ -18,7 +18,6 @@ public class VehicleMaintenanceConfiguration : IEntityTypeConfiguration<VehicleM
 
         builder.HasIndex(x => new { x.VehicleId, x.StartAt, x.EndAt });
 
-        // Servisi pripadaju vozilu: brisanje vozila (dozvoljeno samo bez rezervacija) briše i njegove servise.
         builder.HasOne(x => x.Vehicle)
             .WithMany(x => x.Maintenances)
             .HasForeignKey(x => x.VehicleId)

@@ -6,18 +6,14 @@ import '../providers/vehicle_provider.dart';
 import '../utils/api_client_exception.dart';
 import '../utils/form_validators.dart';
 
-/// Vozilo kako se prikazuje u formi, npr. „Volkswagen Golf (A12-K-345)”.
 String vehicleLabel(Vehicle vehicle) => '${vehicle.name} (${vehicle.registrationNumber})';
 
-/// Polje forme za odabir vozila: kucanjem se traži po marki, modelu ili registraciji na serveru,
-/// jer vozila može biti više nego što stane u jednu stranicu (upute 8.2). Vrijednost polja je Id vozila.
 class VehicleSearchField extends StatelessWidget {
   const VehicleSearchField({super.key, required this.name, required this.provider, this.initialLabel});
 
   final String name;
   final VehicleProvider provider;
 
-  /// Tekst za vozilo iz [FormBuilder.initialValue] (kod izmjene).
   final String? initialLabel;
 
   @override
@@ -75,7 +71,6 @@ class _VehicleAutocompleteState extends State<_VehicleAutocomplete> {
           suffixIcon: const Icon(Icons.search),
         ),
         onChanged: (text) {
-          // Izmijenjen tekst više ne odgovara odabranom vozilu.
           if (text != _selectedLabel && field.value != null) {
             field.didChange(null);
           }
@@ -91,7 +86,6 @@ class _VehicleAutocompleteState extends State<_VehicleAutocomplete> {
       return const [];
     }
 
-    // Zahtjev ide tek kad se prestane kucati; Autocomplete sam odbacuje zakašnjele odgovore.
     await Future<void>.delayed(_debounce);
     if (!mounted || _controller.text.trim() != text) {
       return const [];
@@ -101,7 +95,6 @@ class _VehicleAutocompleteState extends State<_VehicleAutocomplete> {
       final result = await widget.provider.get(filter: {'text': text, 'pageSize': 10});
       return result.items ?? const [];
     } on ApiClientException {
-      // Lista ostaje prazna; greška pri spremanju forme će se prikazati iznad polja.
       return const [];
     }
   }

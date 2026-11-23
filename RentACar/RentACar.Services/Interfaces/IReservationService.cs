@@ -4,10 +4,8 @@ using RentACar.Model.SearchObjects;
 
 namespace RentACar.Services.Interfaces;
 
-// Rezervacije se ne mijenjaju ni ne brišu kroz CRUD (prijava: rezervacije se ne brišu), nego samo kroz akcije state machine-a.
 public interface IReservationService : IBaseReadService<ReservationResponse, ReservationSearchObject>
 {
-    // Obračun prije potvrde, bez upisa (iste provjere kao kreiranje).
     Task<ReservationCalculationResponse> CalculateAsync(ReservationInsertRequest request);
 
     Task<ReservationResponse> InsertAsync(ReservationInsertRequest request);

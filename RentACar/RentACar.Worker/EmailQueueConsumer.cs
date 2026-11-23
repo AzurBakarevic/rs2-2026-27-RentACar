@@ -7,10 +7,6 @@ using RentACar.Model.Messaging;
 
 namespace RentACar.Worker;
 
-// Čita e-mail poruke koje API šalje na RabbitMQ i šalje ih korisnicima (upute 3.2).
-// AsyncEventingBasicConsumer jer je obrada poruke asinhrona (upute A.1). Poruka se potvrđuje (ack) tek kad je
-// e-mail poslan. Neuspjelo slanje se ponavlja nakon 1, 2, 4 i 8 sekundi (upute A.1), a ako ni tada ne uspije,
-// poruka prelazi u red neuspjelih (rentacar.emails.failed), gdje ostaje za pregled.
 public class EmailQueueConsumer : BackgroundService
 {
     private static readonly TimeSpan[] RetryDelays =
@@ -21,7 +17,6 @@ public class EmailQueueConsumer : BackgroundService
         TimeSpan.FromSeconds(8)
     ];
 
-    // Pauza između pokušaja povezivanja na RabbitMQ raste do ove granice.
     private static readonly TimeSpan MaxConnectDelay = TimeSpan.FromSeconds(30);
 
     private readonly RabbitMqSettings _settings;
@@ -47,7 +42,6 @@ public class EmailQueueConsumer : BackgroundService
             await channel.QueueDeclareAsync(MessageQueues.Emails, durable: true, exclusive: false, autoDelete: false,
                 arguments: MessageQueues.EmailQueueArguments, cancellationToken: stoppingToken);
 
-            // Jedna poruka odjednom: sljedeća stiže tek kad je prethodna potvrđena ili odbačena.
             await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false, stoppingToken);
 
             var consumer = new AsyncEventingBasicConsumer(channel);
@@ -62,7 +56,6 @@ public class EmailQueueConsumer : BackgroundService
         {
             _logger.LogInformation("E-mail worker is stopping.");
         }
-        // Worker ne smije prestati raditi bez zapisa u logu (upute A.1); Docker ga zatim ponovo pokreće.
         catch (Exception ex)
         {
             _logger.LogCritical(ex, "E-mail worker stopped because of an unexpected error.");
@@ -70,8 +63,6 @@ public class EmailQueueConsumer : BackgroundService
         }
     }
 
-    // RabbitMQ se može pokrenuti nakon Worker-a, pa se povezivanje ponavlja dok ne uspije.
-    // Kasnije prekide konekcije RabbitMQ.Client sam obnavlja (automatic recovery), a ovdje se samo zapisuju.
     private async Task<IConnection> ConnectAsync(CancellationToken stoppingToken)
     {
         var factory = new ConnectionFactory
@@ -142,7 +133,6 @@ public class EmailQueueConsumer : BackgroundService
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
-            // Bez potvrde: RabbitMQ vraća poruku u red, pa se e-mail šalje kad se Worker ponovo pokrene.
             _logger.LogInformation("E-mail \"{Subject}\" not sent yet because the worker is stopping; it stays in the queue.",
                 message.Subject);
         }
@@ -175,8 +165,6 @@ public class EmailQueueConsumer : BackgroundService
         }
     }
 
-    // Poruka koja nije e-mail (neispravan JSON ili bez primaoca) ne može uspjeti ni ponovnim pokušajem,
-    // pa odmah ide u red neuspjelih.
     private EmailMessage? Deserialize(BasicDeliverEventArgs args)
     {
         try

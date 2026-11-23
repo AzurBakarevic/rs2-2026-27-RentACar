@@ -4,7 +4,6 @@ using RentACar.Services.Helpers;
 
 namespace RentACar.Services.Validators;
 
-// Format zahtjeva; dostupnost vozila i opreme, vozačku dozvolu i preklapanje provjerava ReservationCalculator.
 public class ReservationInsertValidator : AbstractValidator<ReservationInsertRequest>
 {
     private const int MaxEquipmentQuantity = 20;

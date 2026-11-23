@@ -4,7 +4,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Generički kontroler za čitanje, dodavanje (201), izmjenu (200) i brisanje (204).
 public abstract class BaseCRUDController<TResponse, TSearch, TInsertRequest, TUpdateRequest, TService>
     : BaseReadController<TResponse, TSearch, TService>
     where TSearch : BaseSearchObject

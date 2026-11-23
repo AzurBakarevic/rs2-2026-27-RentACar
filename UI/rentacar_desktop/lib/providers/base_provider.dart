@@ -10,15 +10,12 @@ import '../utils/api_client_exception.dart';
 import 'auth_provider.dart';
 
 abstract class BaseProvider<T> with ChangeNotifier {
-  // Adresa API-ja (isti port kao u docker-compose); druga adresa se zadaje s --dart-define=API_BASE_URL=... (upute 3.3).
   static const String _apiBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:5001/');
 
-  /// Uvijek završava s „/”, pa adresa može biti zadana i bez nje (kao u primjeru iz uputa).
   static final String baseUrl = _apiBaseUrl.endsWith('/') ? _apiBaseUrl : '$_apiBaseUrl/';
 
   static const Duration requestTimeout = Duration(seconds: 30);
 
-  /// Segment API-ja, npr. `Brands` → `{baseUrl}Brands`.
   final String endpoint;
 
   BaseProvider(this.endpoint);
@@ -34,7 +31,6 @@ abstract class BaseProvider<T> with ChangeNotifier {
     return result;
   }
 
-  /// Da li postoji bar jedan zapis (preduslov za formu koja ga bira, upute 6).
   Future<bool> hasAny() async {
     final result = await get(filter: {'pageSize': 1});
     return result.items?.isNotEmpty ?? false;
@@ -73,7 +69,6 @@ abstract class BaseProvider<T> with ChangeNotifier {
     return uri.replace(queryParameters: getQueryParameters(filter));
   }
 
-  // Prazne vrijednosti se ne šalju, pa filter bez teksta ne sužava rezultat.
   static Map<String, String> getQueryParameters(Map<String, dynamic> filter) {
     final parameters = <String, String>{};
     filter.forEach((key, value) {
@@ -94,8 +89,6 @@ abstract class BaseProvider<T> with ChangeNotifier {
     return headers;
   }
 
-  /// Šalje zahtjev; mrežne greške i neuspješne odgovore pretvara u [ApiClientException].
-  /// Za 401 vraća aplikaciju na prijavu, osim kad [handleUnauthorized] nije postavljen (login, logout).
   static Future<http.Response> send(
     Future<http.Response> Function() request, {
     bool handleUnauthorized = true,

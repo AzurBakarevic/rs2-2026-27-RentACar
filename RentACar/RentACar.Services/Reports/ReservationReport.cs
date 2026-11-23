@@ -17,12 +17,9 @@ internal class ReservationReportRow
     public ReservationStatus Status { get; init; }
     public decimal TotalPrice { get; init; }
 
-    // Uplaćeno i nije vraćeno; 0 za neplaćenu i otkazanu rezervaciju.
     public decimal PaidAmount { get; init; }
 }
 
-// Prijava: PDF sa svim rezervacijama u periodu (korisnik, vozilo, trajanje najma, status i iznos),
-// ukupnim brojem rezervacija i ukupnim prihodom.
 internal static class ReservationReport
 {
     public const string Title = "Rezervacije i prihod po periodu";

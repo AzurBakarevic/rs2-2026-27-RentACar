@@ -8,7 +8,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Čitaju svi prijavljeni (korisnik vidi samo aktivnu opremu, koju bira pri rezervaciji), a mijenja samo administrator.
 public class EquipmentController
     : BaseCRUDController<EquipmentResponse, EquipmentSearchObject, EquipmentInsertRequest, EquipmentUpdateRequest, IEquipmentService>
 {

@@ -2,14 +2,12 @@ import 'package:material_ui/material_ui.dart';
 
 import '../utils/app_theme.dart';
 
-/// Dugmad za izmjenu i brisanje u koloni „Akcije”.
 class TableActionButtons extends StatelessWidget {
   const TableActionButtons({super.key, this.onEdit, this.onDelete, this.deleteBlockedReason});
 
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
-  /// Kad je zadan, „Obriši” je onemogućeno, a razlog se prikazuje kad se pređe mišem preko dugmeta.
   final String? deleteBlockedReason;
 
   @override

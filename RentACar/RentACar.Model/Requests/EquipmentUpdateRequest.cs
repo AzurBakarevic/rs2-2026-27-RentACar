@@ -6,6 +6,5 @@ public class EquipmentUpdateRequest
     public decimal PricePerDay { get; set; }
     public int Quantity { get; set; }
 
-    // false = oprema se ne nudi prilikom rezervacije.
     public bool IsActive { get; set; }
 }

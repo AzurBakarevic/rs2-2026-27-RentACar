@@ -4,7 +4,6 @@ using RentACar.WebAPI.Services.AccessManager;
 
 namespace RentACar.WebAPI.Services;
 
-// Čita prijavljenog korisnika iz već provjerenog tokena trenutnog zahtjeva (IHttpContextAccessor).
 public class HttpAuthenticatedUserAccessor : IAuthenticatedUserAccessor
 {
     private readonly IHttpContextAccessor _httpContextAccessor;

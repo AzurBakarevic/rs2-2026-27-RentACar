@@ -9,8 +9,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.WebAPI.Controllers;
 
-// Čitaju svi prijavljeni (korisnik samo svoje rezervacije). Rezervaciju kreira i plaća korisnik (mobilna aplikacija),
-// a status se mijenja samo kroz akcije state machine-a; izmjene i brisanja nema (prijava: rezervacije se ne brišu).
 public class ReservationsController : BaseReadController<ReservationResponse, ReservationSearchObject, IReservationService>
 {
     private readonly IPaymentService _paymentService;
@@ -30,7 +28,6 @@ public class ReservationsController : BaseReadController<ReservationResponse, Re
         return StatusCode(StatusCodes.Status201Created, result);
     }
 
-    // Obračun prije potvrde (broj dana, cijena vozila, sezonski dodatak, oprema, ukupno), bez upisa.
     [Authorize(Roles = RoleNames.Customer)]
     [HttpPost("Calculate")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -40,8 +37,6 @@ public class ReservationsController : BaseReadController<ReservationResponse, Re
         return await _service.CalculateAsync(request);
     }
 
-    // Otvara Stripe plaćanje za iznos rezervacije; s odgovorom aplikacija prikazuje obrazac za karticu.
-    // Ponovljen poziv (npr. nakon odbijene kartice) koristi isto plaćanje.
     [Authorize(Roles = RoleNames.Customer)]
     [HttpPost("{id:int}/Payment")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -53,7 +48,6 @@ public class ReservationsController : BaseReadController<ReservationResponse, Re
         return await _paymentService.CreatePaymentAsync(id);
     }
 
-    // Aplikacija javlja da je korisnik platio; server stanje provjerava kod Stripe-a (upute 7.1), bez podataka iz zahtjeva.
     [Authorize(Roles = RoleNames.Customer)]
     [HttpPost("{id:int}/Payment/Confirm")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -95,8 +89,6 @@ public class ReservationsController : BaseReadController<ReservationResponse, Re
         return await _service.CompleteAsync(id);
     }
 
-    // Otkazuju i korisnik (svoju rezervaciju) i administrator; pravila za svakog su u state machine-u.
-    // Tijelo nije obavezno, jer korisnik ne mora navesti razlog.
     [HttpPost("{id:int}/Cancel")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

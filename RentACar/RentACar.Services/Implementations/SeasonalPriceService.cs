@@ -37,7 +37,6 @@ public class SeasonalPriceService
         return query;
     }
 
-    // Najnoviji periodi prvi.
     protected override IQueryable<SeasonalPrice> ApplyOrdering(IQueryable<SeasonalPrice> query)
         => query.OrderByDescending(x => x.StartDate).ThenBy(x => x.Name);
 
@@ -45,13 +44,10 @@ public class SeasonalPriceService
 
     protected override Task BeforeUpdateAsync(SeasonalPriceUpdateRequest request, SeasonalPrice entity) => ValidateAsync(entity);
 
-    // Rezervacije čuvaju već obračunat sezonski dodatak, pa brisanje sezonske cijene ne mijenja postojeće rezervacije.
-
     private async Task ValidateAsync(SeasonalPrice entity)
     {
         entity.Name = entity.Name.Trim();
 
-        // Prijava: periodi dviju aktivnih sezonskih cijena se ne smiju preklapati (oba datuma su uključena u period).
         if (entity.IsActive)
         {
             var overlapping = await _dbContext.SeasonalPrices

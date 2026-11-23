@@ -2,13 +2,11 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'seasonal_price.g.dart';
 
-/// Period (oba datuma uključena) u kojem se cijena najma uvećava za zadani procenat.
 @JsonSerializable()
 class SeasonalPrice {
   final int id;
   final String name;
 
-  /// API šalje samo datum (npr. "2026-06-01"), pa je ovo ponoć lokalnog dana.
   final DateTime startDate;
   final DateTime endDate;
   final double increasePercentage;

@@ -10,11 +10,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.Implementations;
 
-// Tok plaćanja (prijava, upute 7.1):
-// 1. POST /Reservations/{id}/Payment: server otvara Stripe plaćanje za iznos iz baze (ne iz zahtjeva) i vraća clientSecret.
-// 2. Mobilna aplikacija s njim prikazuje Stripe obrazac; podaci kartice idu direktno Stripe-u, ne našem serveru.
-// 3. POST /Reservations/{id}/Payment/Confirm: server pita Stripe za stanje plaćanja i tek tada rezervaciju označava plaćenom.
-// Ako aplikacija ne stigne do koraka 3, plaćanje usklađuju potvrda administratora i pozadinski posao (ReservationPaymentHandler).
 public class PaymentService : IPaymentService
 {
     private readonly RentACarDbContext _dbContext;
@@ -37,10 +32,6 @@ public class PaymentService : IPaymentService
         _authenticatedUser = authenticatedUser;
     }
 
-    // ---------- Historija plaćanja ----------
-
-    // Lista transakcija (prijava): svaka uplata je jedna stavka, a vraćena uplata još jedna (povrat, sa svojim datumom).
-    // Obje vrste se spajaju u bazi (UNION ALL), pa se sortiranje i straničenje izvršavaju u SQL-u (upute 8.2).
     public async Task<PageResult<PaymentTransactionResponse>> GetAllAsync(PaymentSearchObject? search = null)
     {
         search ??= new PaymentSearchObject();
@@ -102,7 +93,6 @@ public class PaymentService : IPaymentService
             PaymentStatus.Paid => paid,
             PaymentStatus.Refunded => refunded,
             null => paid.Concat(refunded),
-            // Otvorena i poništena plaćanja nisu transakcije (novac nije prešao), pa ih historija ne prikazuje.
             _ => paid.Where(x => false)
         };
 
@@ -112,7 +102,6 @@ public class PaymentService : IPaymentService
             totalCount = await query.CountAsync();
         }
 
-        // Straničenje kao u BaseReadService-u (PageSize najviše 100, upute 8.2).
         var page = Math.Max(search.Page ?? 1, 1);
         var pageSize = Math.Clamp(search.PageSize ?? BaseSearchObject.DefaultPageSize, 1, BaseSearchObject.MaxPageSize);
         var skip = (int)Math.Min((long)(page - 1) * pageSize, int.MaxValue);
@@ -132,8 +121,6 @@ public class PaymentService : IPaymentService
         };
     }
 
-    // ---------- Plaćanje ----------
-
     public async Task<PaymentIntentResponse> CreatePaymentAsync(int reservationId)
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
@@ -144,8 +131,6 @@ public class PaymentService : IPaymentService
         var payment = await _paymentHandler.GetActivePaymentAsync(reservation.Id);
         GatewayPaymentIntent? intent = null;
 
-        // Ponovni pokušaj (prijava: "plaćanje se može ponoviti iz detalja rezervacije") koristi isto Stripe plaćanje,
-        // pa korisnik ni dvostrukim klikom ne može platiti dva puta.
         if (payment is { Status: PaymentStatus.Pending })
         {
             intent = await _gateway.GetPaymentIntentAsync(payment.StripePaymentIntentId);
@@ -154,7 +139,6 @@ public class PaymentService : IPaymentService
 
         if (payment is { Status: PaymentStatus.Paid })
         {
-            // Plaćanje je uspjelo, a aplikacija to nije javila: sada je evidentirano.
             await _dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
             throw new ClientException("Rezervacija je već plaćena.");
@@ -201,7 +185,6 @@ public class PaymentService : IPaymentService
         };
     }
 
-    // Idempotentno: ponovljena potvrda već plaćene rezervacije ne mijenja ništa i ne šalje novu notifikaciju.
     public async Task<ReservationResponse> ConfirmPaymentAsync(int reservationId)
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
@@ -240,9 +223,6 @@ public class PaymentService : IPaymentService
         return await _reservationService.GetByIdAsync(reservation.Id);
     }
 
-    // Rezervacija prijavljenog korisnika, zaključana do kraja transakcije (UPDLOCK), kao pri promjeni statusa:
-    // plaćanje, otkazivanje i istek roka za istu rezervaciju izvršavaju se jedno za drugim.
-    // Tuđa rezervacija za korisnika ne postoji (404).
     private async Task<Reservation> LockOwnReservationAsync(int reservationId)
     {
         var userId = _authenticatedUser.GetUserId() ?? throw new UnauthorizedAccessException();

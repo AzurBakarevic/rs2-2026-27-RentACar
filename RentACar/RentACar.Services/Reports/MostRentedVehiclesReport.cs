@@ -12,8 +12,6 @@ internal class MostRentedVehicleRow
     public decimal Revenue { get; init; }
 }
 
-// Prijava: PDF s vozilima sortiranim po broju rezervacija u periodu (marka i model, registracija, kategorija,
-// broj rezervacija i ostvareni prihod).
 internal static class MostRentedVehiclesReport
 {
     public const string Title = "Najčešće iznajmljivana vozila";

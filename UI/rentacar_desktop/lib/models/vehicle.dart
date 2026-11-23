@@ -2,7 +2,6 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'vehicle.g.dart';
 
-/// Vozilo bez slike; slika se učitava posebno kad je [hasImage] true (upute 8.2).
 @JsonSerializable()
 class Vehicle {
   final int id;
@@ -27,7 +26,6 @@ class Vehicle {
   final double? averageRating;
   final int reviewCount;
 
-  /// Razlog zbog kojeg se vozilo ne može obrisati; `null` = može.
   final String? deleteBlockedReason;
 
   Vehicle({
@@ -55,7 +53,6 @@ class Vehicle {
     this.deleteBlockedReason,
   });
 
-  /// Marka i model, npr. „Volkswagen Golf”.
   String get name => '$brandName $vehicleModelName';
 
   factory Vehicle.fromJson(Map<String, dynamic> json) => _$VehicleFromJson(json);

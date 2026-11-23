@@ -6,7 +6,6 @@ namespace RentACar.WebAPI.Extensions;
 
 public static class MessagingExtensions
 {
-    // API šalje poruke na RabbitMQ, a e-mail šalje poseban servis RentACar.Worker (upute 3.2).
     public static IServiceCollection AddRentACarMessaging(this IServiceCollection services, IConfiguration configuration)
     {
         var section = configuration.GetSection(RabbitMqSettings.SectionName);
@@ -15,7 +14,6 @@ public static class MessagingExtensions
 
         services.Configure<RabbitMqSettings>(section);
 
-        // Jedna konekcija za cijelu aplikaciju (upute A.1).
         services.AddSingleton<IEmailPublisher, RabbitMqEmailPublisher>();
         services.AddScoped<PendingEmails>();
 

@@ -22,8 +22,6 @@ services:
     networks:
       - rentacar
 
-  # Posrednik između API-ja i Worker-a (upute 3.2). Korisnik i lozinka su iz .env-a; upravljački pregled
-  # (redovi i poruke) je na http://localhost:${RABBITMQ_MANAGEMENT_HOST_PORT}.
   rentacar-rabbitmq:
     image: rabbitmq:4.3.8-management
     container_name: rentacar-rabbitmq
@@ -45,8 +43,6 @@ services:
     networks:
       - rentacar
 
-  # Glavni servis (REST API). Konfiguracija je iz .env-a; ovdje se samo biraju vrijednosti s prefiksom DOCKER_
-  # (također iz .env-a), jer se u kontejneru baza i RabbitMQ nalaze po nazivu servisa, a ne preko localhost-a.
   rentacar-api:
     build:
       context: .
@@ -68,7 +64,6 @@ services:
     networks:
       - rentacar
 
-  # Pomoćni servis: čita poruke s RabbitMQ-a i šalje e-mailove (upute 3.2).
   rentacar-worker:
     build:
       context: .

@@ -13,11 +13,9 @@ public class UserResponse
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
 
-    // Slika profila nije u odgovoru (upute 8.2); klijent je učitava sa GET /Users/{id}/Image ili GET /Profile/Image.
     public bool HasProfileImage { get; set; }
 
     public int RoleId { get; set; }
 
-    // Mapster ga puni iz Role.Name.
     public string RoleName { get; set; } = string.Empty;
 }

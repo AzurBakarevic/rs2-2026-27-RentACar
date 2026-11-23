@@ -27,10 +27,6 @@ public class ReviewService : BaseReadService<Review, ReviewResponse, ReviewSearc
         _insertValidator = insertValidator;
     }
 
-    // ---------- Čitanje ----------
-
-    // Administrator vidi sve recenzije. Korisnik vidi recenzije vozila koja su u ponudi (kao i sama vozila)
-    // i svoje recenzije, i kad je vozilo u međuvremenu deaktivirano.
     protected override IQueryable<Review> GetQuery()
     {
         var query = base.GetQuery();
@@ -63,14 +59,9 @@ public class ReviewService : BaseReadService<Review, ReviewResponse, ReviewSearc
         return query;
     }
 
-    // Najnovije prve.
     protected override IQueryable<Review> ApplyOrdering(IQueryable<Review> query)
         => query.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id);
 
-    // ---------- Dodavanje i uklanjanje ----------
-
-    // Prijava: recenziju ostavlja korisnik nakon što rezervacija dobije status Završena, najviše jednu po rezervaciji.
-    // Ako dva zahtjeva za istu rezervaciju stignu u isto vrijeme, drugi odbija jedinstveni indeks na ReservationId (409).
     public async Task<ReviewResponse> InsertAsync(ReviewInsertRequest request)
     {
         await _insertValidator.ValidateAndThrowAsync(request);
@@ -78,7 +69,6 @@ public class ReviewService : BaseReadService<Review, ReviewResponse, ReviewSearc
         var userId = _authenticatedUser.GetUserId()
             ?? throw new UnauthorizedAccessException("No authenticated user in the current request.");
 
-        // Tuđa rezervacija za korisnika ne postoji (404), kao i u ReservationService-u.
         var reservation = await _dbContext.Reservations
             .AsNoTracking()
             .Where(x => x.Id == request.ReservationId && x.UserId == userId)
@@ -106,7 +96,6 @@ public class ReviewService : BaseReadService<Review, ReviewResponse, ReviewSearc
         return await GetByIdAsync(entity.Id);
     }
 
-    // Administrator uklanja recenziju neprimjerenog sadržaja (prijava); ona time izlazi i iz prosječne ocjene vozila.
     public async Task DeleteAsync(int id)
     {
         var deleted = await _dbContext.Reviews

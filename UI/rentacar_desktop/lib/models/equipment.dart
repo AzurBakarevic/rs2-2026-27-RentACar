@@ -8,13 +8,10 @@ class Equipment {
   final String name;
   final double pricePerDay;
 
-  /// Ukupan broj komada koje agencija ima.
   final int quantity;
 
-  /// Neaktivna oprema se ne nudi prilikom rezervacije.
   final bool isActive;
 
-  /// Razlog zbog kojeg se oprema ne može obrisati; `null` = može.
   final String? deleteBlockedReason;
 
   Equipment({

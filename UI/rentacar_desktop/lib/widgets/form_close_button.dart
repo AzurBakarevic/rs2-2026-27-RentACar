@@ -2,7 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../utils/utils_widgets.dart';
 
-/// „X” u gornjem desnom uglu forme (upute 6); dok traje spremanje je onemogućen uz razlog.
 class FormCloseButton extends StatelessWidget {
   const FormCloseButton({super.key, required this.isSaving, required this.onClose});
 

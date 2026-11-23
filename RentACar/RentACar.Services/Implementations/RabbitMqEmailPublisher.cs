@@ -7,9 +7,6 @@ using RentACar.Services.Interfaces;
 
 namespace RentACar.Services.Implementations;
 
-// Jedna RabbitMQ konekcija i jedan kanal za cijelu aplikaciju (singleton), a ne nova konekcija pri svakom slanju
-// kao kod profesora (upute A.1). Konekcija se otvara pri prvom slanju i ponovo kad se prekine (npr. restart RabbitMQ-a).
-// Kanal ima potvrde objave: slanje završava tek kad RabbitMQ potvrdi da je poruka u redu.
 public sealed class RabbitMqEmailPublisher : IEmailPublisher, IAsyncDisposable
 {
     private static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(5);
@@ -17,7 +14,6 @@ public sealed class RabbitMqEmailPublisher : IEmailPublisher, IAsyncDisposable
     private readonly ConnectionFactory _connectionFactory;
     private readonly ILogger<RabbitMqEmailPublisher> _logger;
 
-    // Kanal se ne koristi iz više niti istovremeno, pa slanja idu jedno po jedno.
     private readonly SemaphoreSlim _lock = new(1, 1);
 
     private IConnection? _connection;
@@ -36,7 +32,6 @@ public sealed class RabbitMqEmailPublisher : IEmailPublisher, IAsyncDisposable
             Password = settings.Password,
             ClientProvidedName = "RentACar.WebAPI",
             RequestedConnectionTimeout = ConnectionTimeout,
-            // Prekinuta konekcija se ponovo otvara pri sljedećem slanju (GetChannelAsync).
             AutomaticRecoveryEnabled = false
         };
     }
@@ -45,7 +40,6 @@ public sealed class RabbitMqEmailPublisher : IEmailPublisher, IAsyncDisposable
     {
         var body = JsonSerializer.SerializeToUtf8Bytes(message);
 
-        // Poruka preživi restart RabbitMQ-a (trajni red i trajna poruka).
         var properties = new BasicProperties
         {
             Persistent = true,
@@ -88,7 +82,6 @@ public sealed class RabbitMqEmailPublisher : IEmailPublisher, IAsyncDisposable
         return _channel;
     }
 
-    // Prekinuta konekcija se odbacuje prije zatvaranja, pa ni greška pri zatvaranju ne sprečava novu konekciju.
     private async Task CloseAsync()
     {
         var channel = _channel;

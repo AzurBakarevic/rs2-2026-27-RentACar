@@ -2,7 +2,6 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'reservation.g.dart';
 
-/// Status rezervacije; API ga šalje i prima kao broj.
 enum ReservationStatus {
   @JsonValue(1)
   pending(1, 'Na čekanju'),
@@ -18,7 +17,6 @@ enum ReservationStatus {
   final int apiValue;
   final String label;
 
-  /// Završena i otkazana rezervacija se više ne mijenjaju (prijava).
   bool get isFinal => this == completed || this == cancelled;
 }
 
@@ -37,7 +35,6 @@ enum PaymentStatus {
   final String label;
 }
 
-/// Akcije administratora; [apiName] je naziv i u odgovoru API-ja i u adresi akcije.
 enum ReservationAction {
   confirm('Confirm', 'Potvrdi'),
   reject('Reject', 'Odbij'),
@@ -49,11 +46,9 @@ enum ReservationAction {
   final String apiName;
   final String label;
 
-  /// Razlog se unosi pri odbijanju i otkazivanju (prijava).
   bool get requiresReason => this == reject || this == cancel;
 }
 
-/// Rezervacija za listu i detalje; opremu, uplatu i historiju statusa API šalje samo u detaljima.
 @JsonSerializable()
 class Reservation {
   final int id;
@@ -74,15 +69,12 @@ class Reservation {
   final bool userHasImage;
   final int vehicleId;
 
-  /// Marka i model, npr. „Volkswagen Golf”.
   final String vehicleName;
   final String vehicleRegistrationNumber;
   final bool vehicleHasImage;
 
-  /// Akcije koje su sada dozvoljene.
   final List<String> allowedActions;
 
-  /// Razlozi za akcije koje u ovom statusu postoje, ali trenutno nisu dozvoljene.
   final Map<String, String> actionBlockedReasons;
 
   final List<ReservationEquipment>? equipment;
@@ -117,13 +109,11 @@ class Reservation {
     this.statusHistory,
   });
 
-  /// Akcije koje se prikazuju: dozvoljene i onemogućene, uvijek istim redoslijedom.
   List<ReservationAction> get actions => [
         for (final action in ReservationAction.values)
           if (allowedActions.contains(action.apiName) || actionBlockedReasons.containsKey(action.apiName)) action,
       ];
 
-  /// Razlog zbog kojeg akcija nije dozvoljena ili `null`; pravila računa server.
   String? blockedReason(ReservationAction action) => actionBlockedReasons[action.apiName];
 
   factory Reservation.fromJson(Map<String, dynamic> json) => _$ReservationFromJson(json);
@@ -164,16 +154,13 @@ class ReservationPayment {
   Map<String, dynamic> toJson() => _$ReservationPaymentToJson(this);
 }
 
-/// Jedan zapis historije statusa: šta se promijenilo, kada i ko je to izvršio.
 @JsonSerializable()
 class ReservationStatusChange {
-  /// `null` kod kreiranja rezervacije.
   final ReservationStatus? oldStatus;
   final ReservationStatus newStatus;
   final String? reason;
   final DateTime changedAt;
 
-  /// `null` kad je promjenu izvršio sistem (npr. istek roka za plaćanje).
   final String? changedByName;
 
   ReservationStatusChange({

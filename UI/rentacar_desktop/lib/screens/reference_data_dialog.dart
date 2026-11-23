@@ -9,8 +9,6 @@ import '../providers/vehicle_model_provider.dart';
 import '../utils/utils_widgets.dart';
 import '../widgets/form_dialog.dart';
 
-/// Forma za zapis šifarnika: naziv i, po potrebi, dodatna polja (npr. marka modela).
-/// Vraća `true` ako je zapis sačuvan.
 Future<bool> showReferenceDataDialog(
   BuildContext context, {
   required String title,
@@ -44,7 +42,6 @@ Future<bool> showReferenceDataDialog(
   );
 }
 
-/// Nova marka iz forme koja je bira; vraća sačuvanu marku ili `null`.
 Future<Brand?> showNewBrandDialog(BuildContext context) async {
   final provider = context.read<BrandProvider>();
   Brand? created;
@@ -59,7 +56,6 @@ Future<Brand?> showNewBrandDialog(BuildContext context) async {
   return saved ? created : null;
 }
 
-/// Novi model za već odabranu marku; vraća sačuvani model ili `null`.
 Future<VehicleModel?> showNewVehicleModelDialog(
   BuildContext context, {
   required int brandId,

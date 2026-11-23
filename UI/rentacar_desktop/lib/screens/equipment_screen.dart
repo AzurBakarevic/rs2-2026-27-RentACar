@@ -13,8 +13,6 @@ import '../widgets/data_table_card.dart';
 import '../widgets/form_dialog.dart';
 import '../widgets/status_badge.dart';
 
-/// Dodatna oprema (prijava: „Upravljanje dodatnom opremom”): pretraga po nazivu, dodavanje, izmjena,
-/// brisanje i status. Opremu korištenu u rezervacijama backend ne dozvoljava obrisati.
 class EquipmentScreen extends StatelessWidget {
   const EquipmentScreen({super.key});
 

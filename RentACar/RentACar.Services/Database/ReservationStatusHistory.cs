@@ -13,7 +13,6 @@ public class ReservationStatusHistory
     public int ReservationId { get; set; }
     public Reservation Reservation { get; set; } = null!;
 
-    // null = promjenu je izvršio sistem (npr. istek roka za plaćanje)
     public int? ChangedByUserId { get; set; }
     public User? ChangedByUser { get; set; }
 }

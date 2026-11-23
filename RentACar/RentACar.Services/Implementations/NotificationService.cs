@@ -17,7 +17,6 @@ public class NotificationService : BaseReadService<Notification, NotificationRes
         _authenticatedUser = authenticatedUser;
     }
 
-    // Svako vidi samo svoje notifikacije, i administrator; tuđa notifikacija za njega ne postoji (404).
     protected override IQueryable<Notification> GetQuery()
     {
         var userId = _authenticatedUser.GetUserId();
@@ -34,13 +33,11 @@ public class NotificationService : BaseReadService<Notification, NotificationRes
         return query;
     }
 
-    // Najnovije prve.
     protected override IQueryable<Notification> ApplyOrdering(IQueryable<Notification> query)
         => query.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id);
 
     public Task<int> GetUnreadCountAsync() => GetQuery().CountAsync(x => !x.IsRead);
 
-    // Jedan UPDATE u bazi, bez učitavanja notifikacije.
     public async Task MarkAsReadAsync(int id)
     {
         var updated = await GetQuery()

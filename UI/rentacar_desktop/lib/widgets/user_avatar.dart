@@ -3,7 +3,6 @@ import 'package:material_ui/material_ui.dart';
 import '../providers/base_provider.dart';
 import '../utils/app_theme.dart';
 
-/// Slika profila korisnika ili ikona kad je korisnik nema (ili se slika ne može učitati).
 class UserAvatar extends StatelessWidget {
   const UserAvatar({super.key, required this.userId, required this.hasImage, this.size = 32});
 
@@ -26,7 +25,6 @@ class UserAvatar extends StatelessWidget {
                 BaseProvider.buildUri('Users/$userId/Image').toString(),
                 headers: BaseProvider.createHeaders()..remove('Content-Type'),
                 fit: BoxFit.cover,
-                // Ne u punoj rezoluciji; dvostruka širina, jer se položena slika isijeca u krug po visini.
                 cacheWidth: (size * 2 * MediaQuery.devicePixelRatioOf(context)).round(),
                 errorBuilder: (_, _, _) => placeholder,
               )

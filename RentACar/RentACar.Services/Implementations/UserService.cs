@@ -16,7 +16,6 @@ namespace RentACar.Services.Implementations;
 public class UserService
     : BaseCRUDService<User, UserResponse, UserSearchObject, UserInsertRequest, UserUpdateRequest>, IUserService
 {
-    // Koliko dugo se verzija tokena čuva u memoriji; svaka promjena je i ranije briše iz keša.
     private static readonly TimeSpan TokenVersionCacheDuration = TimeSpan.FromMinutes(5);
 
     private readonly ICryptoService _cryptoService;
@@ -61,7 +60,6 @@ public class UserService
         _cache = cache;
     }
 
-    // Logički obrisani korisnici ne postoje ni za jednu operaciju (lista, detalji, izmjena, prijava).
     protected override IQueryable<User> GetQuery() => _dbContext.Users.Where(x => !x.IsDeleted);
 
     protected override IQueryable<User> ApplyFilters(IQueryable<User> query, UserSearchObject search)
@@ -90,8 +88,6 @@ public class UserService
     protected override IQueryable<User> ApplyOrdering(IQueryable<User> query)
         => query.OrderBy(x => x.LastName).ThenBy(x => x.FirstName).ThenBy(x => x.Id);
 
-    // ---------- Administracija korisnika (desktop) ----------
-
     protected override User MapInsertRequestToEntity(UserInsertRequest request)
     {
         var entity = base.MapInsertRequestToEntity(request);
@@ -110,7 +106,6 @@ public class UserService
     {
         base.MapUpdateRequestToEntity(request, entity);
 
-        // Nova lozinka samo ako ju je administrator unio; stara se ne traži (upute 4).
         if (!string.IsNullOrEmpty(request.Password))
         {
             SetPassword(entity, request.Password);
@@ -123,7 +118,6 @@ public class UserService
         var roleChanged = entry.Property(x => x.RoleId).OriginalValue != entity.RoleId;
         var activeChanged = entry.Property(x => x.IsActive).OriginalValue != entity.IsActive;
 
-        // Administrator ne smije sam sebi zaključati pristup.
         if (entity.Id == _authenticatedUser.GetUserId())
         {
             if (roleChanged)
@@ -144,7 +138,6 @@ public class UserService
 
         await NormalizeAndEnsureUniqueAsync(entity);
 
-        // Uloga i status su u tokenu ili se provjeravaju uz njega: stari tokeni moraju prestati važiti.
         if (roleChanged || activeChanged || !string.IsNullOrEmpty(request.Password))
         {
             entity.TokenVersion++;
@@ -158,7 +151,6 @@ public class UserService
         return result;
     }
 
-    // Logičko brisanje: zapis ostaje zbog rezervacija i plaćanja, a nalog se više ne može koristiti.
     public override async Task DeleteAsync(int id)
     {
         var entity = await GetQuery().FirstOrDefaultAsync(x => x.Id == id)
@@ -177,9 +169,6 @@ public class UserService
         RemoveTokenVersionFromCache(id);
     }
 
-    // ---------- Slika profila ----------
-
-    // Čita se samo kolona sa slikom (kao kod vozila).
     public async Task<ImageResponse> GetImageAsync(int id)
     {
         var image = await GetQuery()
@@ -208,8 +197,6 @@ public class UserService
 
     public Task DeleteImageAsync(int id) => UpdateImageAsync(id, null);
 
-    // ---------- Prijava, registracija, odjava ----------
-
     public async Task<AuthenticatedUser> AuthenticateAsync(UserLoginRequest request)
     {
         await _loginValidator.ValidateAndThrowAsync(request);
@@ -218,7 +205,6 @@ public class UserService
             .Include(x => x.Role)
             .FirstOrDefaultAsync(x => x.Username == request.Username);
 
-        // Ista poruka za nepostojeće korisničko ime i pogrešnu lozinku, da se ne otkriva koji nalozi postoje.
         if (user == null || !_cryptoService.Verify(user.PasswordHash, user.PasswordSalt, request.Password))
         {
             throw new ClientException("Pogrešno korisničko ime ili lozinka.");
@@ -238,7 +224,6 @@ public class UserService
 
         var entity = _mapper.Map<User>(request);
 
-        // Uloga se nikad ne uzima od klijenta (upute 5).
         entity.RoleId = await _dbContext.Roles
             .Where(x => x.Name == RoleNames.Customer)
             .Select(x => x.Id)
@@ -255,7 +240,6 @@ public class UserService
         return await GetByIdAsync(entity.Id);
     }
 
-    // Odjava poništava token na serveru (upute 5): nova verzija znači da stari tokeni više ne prolaze.
     public async Task LogoutAsync()
     {
         var entity = await GetCurrentUserAsync();
@@ -265,14 +249,12 @@ public class UserService
         RemoveTokenVersionFromCache(entity.Id);
     }
 
-    // Poziva se na svakom zahtjevu s tokenom, pa se rezultat kešira (upute 8.2).
     public async Task<bool> IsTokenValidAsync(int userId, int tokenVersion)
     {
         var currentVersion = await _cache.GetOrCreateAsync(TokenVersionCacheKey(userId), entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TokenVersionCacheDuration;
 
-            // null = korisnik ne postoji, obrisan je ili deaktiviran: nijedan njegov token ne važi.
             return _dbContext.Users
                 .AsNoTracking()
                 .Where(x => x.Id == userId && !x.IsDeleted && x.IsActive)
@@ -282,8 +264,6 @@ public class UserService
 
         return currentVersion == tokenVersion;
     }
-
-    // ---------- Vlastiti profil (Id iz tokena) ----------
 
     public Task<UserResponse> GetProfileAsync()
     {
@@ -303,7 +283,6 @@ public class UserService
         return await GetByIdAsync(entity.Id);
     }
 
-    // Korisnik mora potvrditi staru lozinku (upute 4). Nakon promjene se mora ponovo prijaviti.
     public async Task ChangePasswordAsync(UserPasswordChangeRequest request)
     {
         await _passwordChangeValidator.ValidateAndThrowAsync(request);
@@ -328,15 +307,10 @@ public class UserService
 
     public Task DeleteProfileImageAsync() => DeleteImageAsync(GetCurrentUserId());
 
-    // ---------- Reset zaboravljene lozinke (prijava) ----------
-
-    // Šalje kod na e-mail. Odgovor je uvijek isti, bez obzira postoji li nalog s tom adresom,
-    // da se preko ovog endpointa ne može saznati ko je registrovan.
     public async Task RequestPasswordResetAsync(PasswordForgotRequest request)
     {
         await _passwordForgotValidator.ValidateAndThrowAsync(request);
 
-        // Kod i hash se prave i kad nalog ne postoji: hashiranje traje, pa bi brži odgovor otkrio nepostojeći e-mail.
         var code = PasswordResetRules.GenerateCode();
         var salt = _cryptoService.GenerateSalt();
         var hash = _cryptoService.GenerateHash(code, salt);
@@ -350,7 +324,6 @@ public class UserService
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
         await LockUserAsync(userId.Value);
 
-        // Vrijeme tek nakon zaključavanja: zahtjev koji je čekao vidi promjene prethodnog.
         var now = DateTime.UtcNow;
 
         var lastCodeCreatedAt = await _dbContext.PasswordResetCodes
@@ -362,7 +335,6 @@ public class UserService
             return;
         }
 
-        // Važi samo najnoviji kod.
         await _dbContext.PasswordResetCodes
             .Where(x => x.UserId == userId && x.UsedAt == null && x.ExpiresAt > now)
             .ExecuteUpdateAsync(s => s.SetProperty(x => x.ExpiresAt, now));
@@ -388,7 +360,6 @@ public class UserService
         await _pendingEmails.PublishAsync();
     }
 
-    // Postavlja novu lozinku uz kod iz e-maila. Ista poruka za nepostojeći e-mail, pogrešan, istekao i iskorišten kod.
     public async Task ResetPasswordAsync(PasswordResetRequest request)
     {
         await _passwordResetValidator.ValidateAndThrowAsync(request);
@@ -401,7 +372,6 @@ public class UserService
 
         var now = DateTime.UtcNow;
 
-        // Kod važi dok nije iskorišten, nije istekao i ima manje od 5 pogrešnih unosa, pa se ne može pogoditi isprobavanjem.
         var resetCode = await _dbContext.PasswordResetCodes
             .Where(x => x.UserId == userId
                         && x.UsedAt == null
@@ -425,7 +395,6 @@ public class UserService
         resetCode.UsedAt = now;
         SetPassword(user, request.NewPassword);
 
-        // Kao pri promjeni lozinke: sve postojeće prijave prestaju važiti.
         user.TokenVersion++;
 
         await _dbContext.SaveChangesAsync();
@@ -434,9 +403,6 @@ public class UserService
         RemoveTokenVersionFromCache(userId);
     }
 
-    // ---------- Pomoćne metode ----------
-
-    // Jedan UPDATE, bez učitavanja stare slike u memoriju; null uklanja sliku.
     private async Task UpdateImageAsync(int id, byte[]? image)
     {
         var updated = await GetQuery()
@@ -449,7 +415,6 @@ public class UserService
         }
     }
 
-    // Deaktiviran i obrisan nalog ne može resetovati lozinku (prijava mu ionako nije dozvoljena).
     private Task<int?> FindActiveUserIdByEmailAsync(string email)
     {
         var trimmed = email.Trim();
@@ -460,8 +425,6 @@ public class UserService
             .FirstOrDefaultAsync();
     }
 
-    // Zahtjevi za reset istog naloga idu jedan za drugim (UPDLOCK do kraja transakcije), pa se ni rok za novi kod
-    // ni broj pogrešnih pokušaja ne mogu zaobići istovremenim zahtjevima.
     private Task LockUserAsync(int userId)
         => _dbContext.Database.ExecuteSqlAsync($"SELECT Id FROM Users WITH (UPDLOCK, ROWLOCK) WHERE Id = {userId}");
 
@@ -492,7 +455,6 @@ public class UserService
         }
     }
 
-    // E-mail i korisničko ime moraju biti jedinstveni među neobrisanim korisnicima (kao filtrirani unique indeksi).
     private async Task NormalizeAndEnsureUniqueAsync(User entity)
     {
         entity.FirstName = entity.FirstName.Trim();

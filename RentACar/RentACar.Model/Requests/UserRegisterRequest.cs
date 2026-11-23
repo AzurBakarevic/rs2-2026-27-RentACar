@@ -1,7 +1,5 @@
 namespace RentACar.Model.Requests;
 
-// Registracija u mobilnoj aplikaciji. Nema uloge ni statusa: klijent sebi ne smije dodijeliti
-// privilegije (upute 5), pa servis uvijek postavlja ulogu Korisnik.
 public class UserRegisterRequest : IUserDetails
 {
     public string FirstName { get; set; } = string.Empty;
