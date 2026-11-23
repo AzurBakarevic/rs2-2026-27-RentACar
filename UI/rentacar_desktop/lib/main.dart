@@ -8,8 +8,10 @@ import 'providers/dashboard_provider.dart';
 import 'providers/equipment_provider.dart';
 import 'providers/fuel_type_provider.dart';
 import 'providers/reservation_provider.dart';
+import 'providers/role_provider.dart';
 import 'providers/seasonal_price_provider.dart';
 import 'providers/transmission_type_provider.dart';
+import 'providers/user_provider.dart';
 import 'providers/vehicle_maintenance_provider.dart';
 import 'providers/vehicle_model_provider.dart';
 import 'providers/vehicle_provider.dart';
@@ -36,6 +38,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => FuelTypeProvider()),
         ChangeNotifierProvider(create: (_) => TransmissionTypeProvider()),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => RoleProvider()),
         ChangeNotifierProvider(create: (_) => VehicleProvider()),
         ChangeNotifierProvider(create: (_) => EquipmentProvider()),
         ChangeNotifierProvider(create: (_) => VehicleMaintenanceProvider()),

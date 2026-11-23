@@ -10,9 +10,11 @@ class AuthProvider with ChangeNotifier {
   static const String administratorRole = 'Administrator';
 
   static String? _accessToken;
+  static int? _userId;
   static String? _username;
 
   static String? get accessToken => _accessToken;
+  static int? get userId => _userId;
   static String? get username => _username;
 
   static void Function(String message)? onSessionExpired;
@@ -35,6 +37,7 @@ class AuthProvider with ChangeNotifier {
     }
 
     _accessToken = data['accessToken'];
+    _userId = data['userId'];
     _username = data['username'];
     notifyListeners();
   }
@@ -67,6 +70,7 @@ class AuthProvider with ChangeNotifier {
 
   static void _clearSession() {
     _accessToken = null;
+    _userId = null;
     _username = null;
   }
 }
