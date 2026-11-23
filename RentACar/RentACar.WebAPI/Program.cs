@@ -32,7 +32,6 @@ builder.Services.AddRentACarStripe(builder.Configuration);
 builder.Services.AddRentACarMessaging(builder.Configuration);
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddMemoryCache();
 
 builder.Services.AddMapster();
 TypeAdapterConfig.GlobalSettings.Scan(typeof(MappingConfig).Assembly);

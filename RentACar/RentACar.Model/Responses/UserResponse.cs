@@ -18,4 +18,8 @@ public class UserResponse
     public int RoleId { get; set; }
 
     public string RoleName { get; set; } = string.Empty;
+
+    public int ActiveReservationCount { get; set; }
+
+    public string? DeleteBlockedReason { get; set; }
 }

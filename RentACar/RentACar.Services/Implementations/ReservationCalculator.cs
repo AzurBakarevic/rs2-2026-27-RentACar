@@ -78,7 +78,7 @@ public class ReservationCalculator
     {
         var license = await _dbContext.Users
             .AsNoTracking()
-            .Where(x => x.Id == userId)
+            .Where(x => x.Id == userId && !x.IsDeleted && x.IsActive)
             .Select(x => new { x.DriverLicenseNumber, x.DriverLicenseValidUntil })
             .FirstOrDefaultAsync()
             ?? throw new UnauthorizedAccessException();

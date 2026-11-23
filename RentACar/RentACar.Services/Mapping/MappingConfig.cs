@@ -45,7 +45,10 @@ public class MappingConfig : IRegister
                 src => src.ReservationItems.Any() ? DeleteBlockedReasons.EquipmentInUse : null);
 
         config.NewConfig<User, UserResponse>()
-            .Map(dest => dest.HasProfileImage, src => src.ProfileImage != null);
+            .Map(dest => dest.HasProfileImage, src => src.ProfileImage != null)
+            .Map(dest => dest.ActiveReservationCount,
+                src => src.Reservations.Count(r => ReservationStatuses.Active.Contains(r.Status)))
+            .Ignore(dest => dest.DeleteBlockedReason!);
 
         config.NewConfig<VehicleMaintenance, VehicleMaintenanceResponse>()
             .Map(dest => dest.VehicleName, src => src.Vehicle.VehicleModel.Brand.Name + " " + src.Vehicle.VehicleModel.Name)

@@ -1,7 +1,6 @@
 using FluentValidation;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using RentACar.Model.Constants;
 using RentACar.Model.Exceptions;
 using RentACar.Model.Requests;
@@ -16,11 +15,10 @@ namespace RentACar.Services.Implementations;
 public class UserService
     : BaseCRUDService<User, UserResponse, UserSearchObject, UserInsertRequest, UserUpdateRequest>, IUserService
 {
-    private static readonly TimeSpan TokenVersionCacheDuration = TimeSpan.FromMinutes(5);
+    private const string LastAdministratorMessage = "U sistemu mora ostati bar jedan aktivni administrator.";
 
     private readonly ICryptoService _cryptoService;
     private readonly IAuthenticatedUserAccessor _authenticatedUser;
-    private readonly IMemoryCache _cache;
     private readonly IValidator<UserLoginRequest> _loginValidator;
     private readonly IValidator<UserRegisterRequest> _registerValidator;
     private readonly IValidator<UserProfileUpdateRequest> _profileValidator;
@@ -44,7 +42,6 @@ public class UserService
         IValidator<ImageUploadRequest> imageValidator,
         ICryptoService cryptoService,
         IAuthenticatedUserAccessor authenticatedUser,
-        IMemoryCache cache,
         PendingEmails pendingEmails) : base(dbContext, mapper, insertValidator, updateValidator)
     {
         _loginValidator = loginValidator;
@@ -57,7 +54,6 @@ public class UserService
         _pendingEmails = pendingEmails;
         _cryptoService = cryptoService;
         _authenticatedUser = authenticatedUser;
-        _cache = cache;
     }
 
     protected override IQueryable<User> GetQuery() => _dbContext.Users.Where(x => !x.IsDeleted);
@@ -66,10 +62,10 @@ public class UserService
     {
         if (!string.IsNullOrWhiteSpace(search.Text))
         {
-            query = query.Where(x => x.FirstName.Contains(search.Text)
-                                     || x.LastName.Contains(search.Text)
-                                     || x.Username.Contains(search.Text)
-                                     || x.Email.Contains(search.Text));
+            var text = search.Text.Trim();
+            query = query.Where(x => (x.FirstName + " " + x.LastName).Contains(text)
+                                     || x.Username.Contains(text)
+                                     || x.Email.Contains(text));
         }
 
         if (search.RoleId.HasValue)
@@ -87,6 +83,25 @@ public class UserService
 
     protected override IQueryable<User> ApplyOrdering(IQueryable<User> query)
         => query.OrderBy(x => x.LastName).ThenBy(x => x.FirstName).ThenBy(x => x.Id);
+
+    public override async Task<PageResult<UserResponse>> GetAllAsync(UserSearchObject? search = null)
+    {
+        var result = await base.GetAllAsync(search);
+
+        foreach (var item in result.Items)
+        {
+            SetComputedFields(item);
+        }
+
+        return result;
+    }
+
+    public override async Task<UserResponse> GetByIdAsync(int id)
+    {
+        var user = await base.GetByIdAsync(id);
+        SetComputedFields(user);
+        return user;
+    }
 
     protected override User MapInsertRequestToEntity(UserInsertRequest request)
     {
@@ -115,8 +130,10 @@ public class UserService
     protected override async Task BeforeUpdateAsync(UserUpdateRequest request, User entity)
     {
         var entry = _dbContext.Entry(entity);
-        var roleChanged = entry.Property(x => x.RoleId).OriginalValue != entity.RoleId;
-        var activeChanged = entry.Property(x => x.IsActive).OriginalValue != entity.IsActive;
+        var originalRoleId = entry.Property(x => x.RoleId).OriginalValue;
+        var originalIsActive = entry.Property(x => x.IsActive).OriginalValue;
+        var roleChanged = originalRoleId != entity.RoleId;
+        var activeChanged = originalIsActive != entity.IsActive;
 
         if (entity.Id == _authenticatedUser.GetUserId())
         {
@@ -136,6 +153,18 @@ public class UserService
             await EnsureRoleExistsAsync(entity.RoleId);
         }
 
+        if (roleChanged || activeChanged)
+        {
+            var administratorRoleId = await GetAdministratorRoleIdAsync();
+            var wasActiveAdministrator = originalIsActive && originalRoleId == administratorRoleId;
+            var isActiveAdministrator = entity.IsActive && entity.RoleId == administratorRoleId;
+
+            if (wasActiveAdministrator && !isActiveAdministrator)
+            {
+                await EnsureAnotherActiveAdministratorAsync(entity.Id);
+            }
+        }
+
         await NormalizeAndEnsureUniqueAsync(entity);
 
         if (roleChanged || activeChanged || !string.IsNullOrEmpty(request.Password))
@@ -146,19 +175,38 @@ public class UserService
 
     public override async Task<UserResponse> UpdateAsync(int id, UserUpdateRequest request)
     {
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        await LockAdministratorRoleAsync();
+        await LockUserAsync(id);
+
         var result = await base.UpdateAsync(id, request);
-        RemoveTokenVersionFromCache(id);
+        await transaction.CommitAsync();
+
         return result;
     }
 
     public override async Task DeleteAsync(int id)
     {
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        await LockAdministratorRoleAsync();
+        await LockUserAsync(id);
+
         var entity = await GetQuery().FirstOrDefaultAsync(x => x.Id == id)
             ?? throw new KeyNotFoundException($"User with id {id} not found.");
 
         if (entity.Id == _authenticatedUser.GetUserId())
         {
-            throw new ClientException("Ne možete obrisati vlastiti nalog.");
+            throw new ClientException(DeleteBlockedReasons.OwnAccount);
+        }
+
+        if (await _dbContext.Reservations.AnyAsync(x => x.UserId == id && ReservationStatuses.Active.Contains(x.Status)))
+        {
+            throw new ClientException(DeleteBlockedReasons.UserHasActiveReservations);
+        }
+
+        if (entity.IsActive && entity.RoleId == await GetAdministratorRoleIdAsync())
+        {
+            await EnsureAnotherActiveAdministratorAsync(entity.Id);
         }
 
         entity.IsDeleted = true;
@@ -166,7 +214,7 @@ public class UserService
         entity.TokenVersion++;
 
         await _dbContext.SaveChangesAsync();
-        RemoveTokenVersionFromCache(id);
+        await transaction.CommitAsync();
     }
 
     public async Task<ImageResponse> GetImageAsync(int id)
@@ -246,24 +294,12 @@ public class UserService
         entity.TokenVersion++;
 
         await _dbContext.SaveChangesAsync();
-        RemoveTokenVersionFromCache(entity.Id);
     }
 
-    public async Task<bool> IsTokenValidAsync(int userId, int tokenVersion)
-    {
-        var currentVersion = await _cache.GetOrCreateAsync(TokenVersionCacheKey(userId), entry =>
-        {
-            entry.AbsoluteExpirationRelativeToNow = TokenVersionCacheDuration;
-
-            return _dbContext.Users
-                .AsNoTracking()
-                .Where(x => x.Id == userId && !x.IsDeleted && x.IsActive)
-                .Select(x => (int?)x.TokenVersion)
-                .FirstOrDefaultAsync();
-        });
-
-        return currentVersion == tokenVersion;
-    }
+    public Task<bool> IsTokenValidAsync(int userId, int tokenVersion)
+        => _dbContext.Users
+            .AsNoTracking()
+            .AnyAsync(x => x.Id == userId && !x.IsDeleted && x.IsActive && x.TokenVersion == tokenVersion);
 
     public Task<UserResponse> GetProfileAsync()
     {
@@ -298,7 +334,6 @@ public class UserService
         entity.TokenVersion++;
 
         await _dbContext.SaveChangesAsync();
-        RemoveTokenVersionFromCache(entity.Id);
     }
 
     public Task<ImageResponse> GetProfileImageAsync() => GetImageAsync(GetCurrentUserId());
@@ -399,8 +434,6 @@ public class UserService
 
         await _dbContext.SaveChangesAsync();
         await transaction.CommitAsync();
-
-        RemoveTokenVersionFromCache(userId);
     }
 
     private async Task UpdateImageAsync(int id, byte[]? image)
@@ -427,6 +460,29 @@ public class UserService
 
     private Task LockUserAsync(int userId)
         => _dbContext.Database.ExecuteSqlAsync($"SELECT Id FROM Users WITH (UPDLOCK, ROWLOCK) WHERE Id = {userId}");
+
+    private Task LockAdministratorRoleAsync()
+        => _dbContext.Database.ExecuteSqlAsync(
+            $"SELECT Id FROM Roles WITH (UPDLOCK, ROWLOCK) WHERE Name = {RoleNames.Administrator}");
+
+    private Task<int> GetAdministratorRoleIdAsync()
+        => _dbContext.Roles
+            .Where(x => x.Name == RoleNames.Administrator)
+            .Select(x => x.Id)
+            .FirstAsync();
+
+    private async Task EnsureAnotherActiveAdministratorAsync(int userId)
+    {
+        if (!await GetQuery().AnyAsync(x => x.Id != userId && x.IsActive && x.Role.Name == RoleNames.Administrator))
+        {
+            throw new ClientException(LastAdministratorMessage);
+        }
+    }
+
+    private void SetComputedFields(UserResponse user)
+    {
+        user.DeleteBlockedReason = DeleteBlockedReasons.User(user.Id == _authenticatedUser.GetUserId(), user.ActiveReservationCount);
+    }
 
     private int GetCurrentUserId()
     {
@@ -476,8 +532,4 @@ public class UserService
             throw new ClientException("Korisničko ime je već zauzeto.");
         }
     }
-
-    private static string TokenVersionCacheKey(int userId) => $"user-token-version:{userId}";
-
-    private void RemoveTokenVersionFromCache(int userId) => _cache.Remove(TokenVersionCacheKey(userId));
 }
