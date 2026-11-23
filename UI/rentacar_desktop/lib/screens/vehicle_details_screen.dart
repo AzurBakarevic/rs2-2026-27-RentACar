@@ -1,5 +1,3 @@
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +17,7 @@ import '../utils/app_theme.dart';
 import '../utils/form_errors.dart';
 import '../utils/form_validators.dart';
 import '../utils/formatters.dart';
+import '../utils/image_file_picker.dart';
 import '../utils/utils_widgets.dart';
 import '../widgets/field_with_add_button.dart';
 import '../widgets/form_close_button.dart';
@@ -35,9 +34,6 @@ class VehicleDetailsScreen extends StatefulWidget {
 }
 
 class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
-  static const int _maxImageBytes = 2 * 1024 * 1024;
-  static const Map<String, String> _imageContentTypes = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png'};
-
   static const Map<String, dynamic> _referenceFilter = {'pageSize': 100};
 
   final _formKey = GlobalKey<FormBuilderState>();
@@ -61,9 +57,7 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
   bool _isSaving = false;
   String? _error;
 
-  Uint8List? _imageBytes;
-  String? _imageName;
-  String? _imageContentType;
+  PickedImage? _image;
   String? _imageError;
 
   @override
@@ -481,8 +475,8 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
 
   Widget _buildImagePanel() {
     final Widget preview;
-    if (_imageBytes != null) {
-      preview = Image.memory(_imageBytes!, fit: BoxFit.cover, errorBuilder: (_, _, _) => const ImagePlaceholder());
+    if (_image != null) {
+      preview = Image.memory(_image!.bytes, fit: BoxFit.cover, errorBuilder: (_, _, _) => const ImagePlaceholder());
     } else if (_vehicle?.hasImage ?? false) {
       preview = VehicleImage(
         vehicleId: _vehicle!.id,
@@ -505,11 +499,11 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
         OutlinedButton.icon(
           onPressed: _isSaving ? null : _pickImage,
           icon: const Icon(Icons.upload_outlined),
-          label: Text(_imageBytes != null || (_vehicle?.hasImage ?? false) ? 'Promijeni sliku' : 'Odaberi sliku'),
+          label: Text(_image != null || (_vehicle?.hasImage ?? false) ? 'Promijeni sliku' : 'Odaberi sliku'),
         ),
         const SizedBox(height: 8),
         Text(
-          _imageName == null ? 'JPG ili PNG, najviše 2 MB.' : 'Odabrano: $_imageName (sprema se uz vozilo)',
+          _image == null ? imageRequirements : 'Odabrano: ${_image!.name} (sprema se uz vozilo)',
           style: const TextStyle(color: AppColors.textMuted),
         ),
         if (_imageError != null) ...[
@@ -533,52 +527,13 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
   }
 
   Future<void> _pickImage() async {
-    final PlatformFile? file;
-    try {
-      file = await FilePicker.pickFile(
-        dialogTitle: 'Odaberite sliku vozila',
-        type: FileType.custom,
-        allowedExtensions: _imageContentTypes.keys.toList(),
-      );
-    } catch (e) {
-      debugPrint('Odabir slike nije uspio: $e');
-      if (mounted) {
-        setState(() => _imageError = 'Odabir slike nije uspio.');
-      }
+    final result = await pickImageFile('Odaberite sliku vozila');
+    if (result == null || !mounted) {
       return;
     }
-    if (file == null || !mounted) {
-      return;
-    }
-
-    final contentType = _imageContentTypes[file.extension?.toLowerCase()];
-    if (contentType == null) {
-      setState(() => _imageError = 'Dozvoljene su samo slike u formatu JPG ili PNG.');
-      return;
-    }
-    final length = await file.length();
-    if (!mounted) {
-      return;
-    }
-    if (length != null && length > _maxImageBytes) {
-      setState(() => _imageError = 'Slika može imati najviše 2 MB.');
-      return;
-    }
-
-    final bytes = await file.readAsBytes();
-    if (!mounted) {
-      return;
-    }
-    if (bytes.isEmpty || bytes.length > _maxImageBytes) {
-      setState(() => _imageError = bytes.isEmpty ? 'Odabrani fajl je prazan.' : 'Slika može imati najviše 2 MB.');
-      return;
-    }
-
     setState(() {
-      _imageBytes = bytes;
-      _imageName = file!.name;
-      _imageContentType = contentType;
-      _imageError = null;
+      _image = result.image ?? _image;
+      _imageError = result.error;
     });
   }
 
@@ -625,9 +580,10 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
       return;
     }
 
-    if (_imageBytes != null) {
+    final image = _image;
+    if (image != null) {
       try {
-        await provider.updateImage(_vehicle!.id, _imageBytes!, fileName: _imageName!, contentType: _imageContentType!);
+        await provider.updateImage(_vehicle!.id, image.bytes, fileName: image.name, contentType: image.contentType);
         PaintingBinding.instance.imageCache
           ..clear()
           ..clearLiveImages();
