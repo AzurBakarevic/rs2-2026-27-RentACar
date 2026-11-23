@@ -10,6 +10,7 @@ import '../screens/login_screen.dart';
 import '../screens/reference_data_screen.dart';
 import '../screens/reservation_list_screen.dart';
 import '../screens/seasonal_price_screen.dart';
+import '../screens/user_list_screen.dart';
 import '../screens/vehicle_list_screen.dart';
 import '../screens/vehicle_maintenance_screen.dart';
 import '../utils/app_theme.dart';
@@ -24,6 +25,7 @@ class _MenuEntry {
 
 final List<_MenuEntry> _menuEntries = [
   _MenuEntry(DashboardScreen.title, () => const DashboardScreen()),
+  _MenuEntry(UserListScreen.title, () => const UserListScreen()),
   _MenuEntry(VehicleListScreen.title, () => const VehicleListScreen()),
   _MenuEntry(EquipmentScreen.title, () => const EquipmentScreen()),
   _MenuEntry(VehicleMaintenanceScreen.title, () => const VehicleMaintenanceScreen()),

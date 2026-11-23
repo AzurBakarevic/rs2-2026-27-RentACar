@@ -45,6 +45,7 @@ class CrudListView<T> extends StatefulWidget {
     this.filters = const [],
     this.onClearFilters,
     this.padding = const EdgeInsets.fromLTRB(32, 32, 32, 24),
+    this.actionsFlex = 1,
   });
 
   final BaseProvider<T> provider;
@@ -70,6 +71,8 @@ class CrudListView<T> extends StatefulWidget {
   final VoidCallback? onClearFilters;
 
   final EdgeInsets padding;
+
+  final int actionsFlex;
 
   @override
   State<CrudListView<T>> createState() => _CrudListViewState<T>();
@@ -133,7 +136,7 @@ class _CrudListViewState<T> extends State<CrudListView<T>> {
         ),
         table: DataTableCard(
           scrollController: _scrollController,
-          columns: [...widget.columns, const TableColumnDef('Akcije')],
+          columns: [...widget.columns, TableColumnDef('Akcije', flex: widget.actionsFlex)],
           rows: [
             for (final item in _controller.items)
               [
