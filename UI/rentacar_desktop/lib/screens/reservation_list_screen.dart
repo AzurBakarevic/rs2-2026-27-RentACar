@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../layouts/master_screen.dart';
 import '../models/reservation.dart';
+import '../models/user.dart';
 import '../providers/reservation_provider.dart';
 import '../providers/vehicle_provider.dart';
 import '../utils/app_theme.dart';
@@ -21,12 +22,15 @@ import '../widgets/search_toolbar.dart';
 import '../widgets/user_avatar.dart';
 import 'reservation_action_dialog.dart';
 import 'reservation_details_screen.dart';
+import 'user_list_screen.dart';
 import 'vehicle_list_screen.dart';
 
 class ReservationListScreen extends StatefulWidget {
-  const ReservationListScreen({super.key});
+  const ReservationListScreen({super.key, this.activeOfUser});
 
   static const String title = 'Rezervacije';
+
+  final User? activeOfUser;
 
   @override
   State<ReservationListScreen> createState() => _ReservationListScreenState();
@@ -68,7 +72,9 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
 
   Map<String, dynamic> _buildFilter() {
     final date = _date;
+    final user = widget.activeOfUser;
     return {
+      if (user != null) ...{'userId': user.id, 'isActive': true},
       'text': _searchController.text.trim(),
       'status': _status?.apiValue,
       if (date != null) ...{'from': date, 'to': DateTime(date.year, date.month, date.day + 1)},
@@ -80,8 +86,10 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
   @override
   Widget build(BuildContext context) {
     final vehicleProvider = context.read<VehicleProvider>();
+    final user = widget.activeOfUser;
     return MasterScreen(
-      title: ReservationListScreen.title,
+      title: user == null ? ReservationListScreen.title : 'Aktivne rezervacije: ${user.fullName}',
+      menuLabel: user == null ? ReservationListScreen.title : UserListScreen.title,
       child: ListenableBuilder(
         listenable: _controller,
         builder: (context, _) => PagedTableLayout(
@@ -91,7 +99,13 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
             onChanged: _onSearchChanged,
             filters: [
               DateFilterField(value: _date, onChanged: _onDateChanged),
-              _StatusFilter(value: _status, onChanged: _onStatusChanged),
+              _StatusFilter(
+                value: _status,
+                statuses: user == null
+                    ? ReservationStatus.values
+                    : ReservationStatus.values.where((status) => !status.isFinal).toList(),
+                onChanged: _onStatusChanged,
+              ),
             ],
           ),
           table: DataTableCard(
@@ -101,7 +115,11 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
             isLoading: _controller.isLoading,
             error: _controller.error,
             onRetry: _controller.load,
-            emptyText: _isFiltered ? 'Nema rezervacija koje odgovaraju pretrazi.' : 'Nema rezervacija.',
+            emptyText: _isFiltered
+                ? 'Nema rezervacija koje odgovaraju pretrazi.'
+                : user == null
+                    ? 'Nema rezervacija.'
+                    : 'Korisnik nema aktivnih rezervacija.',
           ),
           pagination: PaginationBar(
             page: _controller.page,
@@ -214,9 +232,10 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
 }
 
 class _StatusFilter extends StatelessWidget {
-  const _StatusFilter({required this.value, required this.onChanged});
+  const _StatusFilter({required this.value, required this.statuses, required this.onChanged});
 
   final ReservationStatus? value;
+  final List<ReservationStatus> statuses;
   final ValueChanged<ReservationStatus?> onChanged;
 
   @override
@@ -233,7 +252,7 @@ class _StatusFilter extends StatelessWidget {
         ),
         items: [
           const DropdownMenuItem<ReservationStatus?>(value: null, child: Text('Svi statusi')),
-          for (final status in ReservationStatus.values)
+          for (final status in statuses)
             DropdownMenuItem<ReservationStatus?>(value: status, child: Text(status.label)),
         ],
         onChanged: onChanged,
