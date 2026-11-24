@@ -8,7 +8,9 @@ import '../screens/dashboard_screen.dart';
 import '../screens/equipment_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/reference_data_screen.dart';
+import '../screens/report_screen.dart';
 import '../screens/reservation_list_screen.dart';
+import '../screens/review_list_screen.dart';
 import '../screens/seasonal_price_screen.dart';
 import '../screens/user_list_screen.dart';
 import '../screens/vehicle_list_screen.dart';
@@ -31,6 +33,8 @@ final List<_MenuEntry> _menuEntries = [
   _MenuEntry(VehicleMaintenanceScreen.title, () => const VehicleMaintenanceScreen()),
   _MenuEntry(SeasonalPriceScreen.title, () => const SeasonalPriceScreen()),
   _MenuEntry(ReservationListScreen.title, () => const ReservationListScreen()),
+  _MenuEntry(ReviewListScreen.title, () => const ReviewListScreen()),
+  _MenuEntry(ReportScreen.title, () => const ReportScreen()),
   _MenuEntry(ReferenceDataScreen.title, () => const ReferenceDataScreen()),
 ];
 

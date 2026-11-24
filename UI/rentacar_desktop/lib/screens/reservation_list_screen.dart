@@ -14,6 +14,7 @@ import '../utils/paged_list_controller.dart';
 import '../utils/utils_widgets.dart';
 import '../widgets/data_table_card.dart';
 import '../widgets/date_filter_field.dart';
+import '../widgets/image_text_cell.dart';
 import '../widgets/paged_table_layout.dart';
 import '../widgets/pagination_bar.dart';
 import '../widgets/reservation_action_button.dart';
@@ -133,11 +134,11 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
 
   List<Widget> _buildCells(Reservation item, VehicleProvider vehicleProvider) {
     return [
-      _ImageTextCell(
+      ImageTextCell(
         image: UserAvatar(userId: item.userId, hasImage: item.userHasImage),
         text: item.userFullName,
       ),
-      _ImageTextCell(
+      ImageTextCell(
         image: VehicleImage(
           vehicleId: item.vehicleId,
           hasImage: item.vehicleHasImage,
@@ -256,52 +257,6 @@ class _StatusFilter extends StatelessWidget {
             DropdownMenuItem<ReservationStatus?>(value: status, child: Text(status.label)),
         ],
         onChanged: onChanged,
-      ),
-    );
-  }
-}
-
-class _ImageTextCell extends StatelessWidget {
-  const _ImageTextCell({required this.image, required this.text, this.details});
-
-  final Widget image;
-  final String text;
-  final String? details;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8),
-      child: Row(
-        children: [
-          image,
-          const SizedBox(width: 6),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Tooltip(
-                  message: text,
-                  child: Text(
-                    text,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.start,
-                    style: const TextStyle(fontSize: 15),
-                  ),
-                ),
-                if (details != null)
-                  Text(
-                    details!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-                  ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -12,8 +12,11 @@ public class ReviewResponse
     public int UserId { get; set; }
     public string UserFullName { get; set; } = string.Empty;
 
+    public bool UserHasImage { get; set; }
+
     public int VehicleId { get; set; }
 
     public string VehicleName { get; set; } = string.Empty;
     public string VehicleRegistrationNumber { get; set; } = string.Empty;
+    public bool VehicleHasImage { get; set; }
 }
