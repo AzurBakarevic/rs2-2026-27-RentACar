@@ -8,6 +8,7 @@ import 'providers/dashboard_provider.dart';
 import 'providers/equipment_provider.dart';
 import 'providers/fuel_type_provider.dart';
 import 'providers/reservation_provider.dart';
+import 'providers/review_provider.dart';
 import 'providers/role_provider.dart';
 import 'providers/seasonal_price_provider.dart';
 import 'providers/transmission_type_provider.dart';
@@ -45,6 +46,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => VehicleMaintenanceProvider()),
         ChangeNotifierProvider(create: (_) => SeasonalPriceProvider()),
         ChangeNotifierProvider(create: (_) => ReservationProvider()),
+        ChangeNotifierProvider(create: (_) => ReviewProvider()),
       ],
       child: const RentACarApp(),
     ),

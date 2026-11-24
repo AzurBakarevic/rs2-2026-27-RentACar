@@ -18,6 +18,7 @@ class AppColors {
   static const Color warningBackground = Color(0xFFFDF1D0);
   static const Color confirmed = Color(0xFF1C5FA8);
   static const Color confirmedBackground = Color(0xFFE2EEFC);
+  static const Color rating = Color(0xFFE5A100);
 }
 
 ThemeData buildAppTheme() {
