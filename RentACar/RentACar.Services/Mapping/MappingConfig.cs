@@ -73,10 +73,12 @@ public class MappingConfig : IRegister
         config.NewConfig<Review, ReviewResponse>()
             .Map(dest => dest.UserId, src => src.Reservation.UserId)
             .Map(dest => dest.UserFullName, src => src.Reservation.User.FirstName + " " + src.Reservation.User.LastName)
+            .Map(dest => dest.UserHasImage, src => !src.Reservation.User.IsDeleted && src.Reservation.User.ProfileImage != null)
             .Map(dest => dest.VehicleId, src => src.Reservation.VehicleId)
             .Map(dest => dest.VehicleName,
                 src => src.Reservation.Vehicle.VehicleModel.Brand.Name + " " + src.Reservation.Vehicle.VehicleModel.Name)
-            .Map(dest => dest.VehicleRegistrationNumber, src => src.Reservation.Vehicle.RegistrationNumber);
+            .Map(dest => dest.VehicleRegistrationNumber, src => src.Reservation.Vehicle.RegistrationNumber)
+            .Map(dest => dest.VehicleHasImage, src => src.Reservation.Vehicle.Image != null);
 
         config.NewConfig<ReservationEquipment, ReservationEquipmentResponse>()
             .Map(dest => dest.TotalPrice, src => src.Quantity * src.PricePerDay * src.Reservation.RentalDays);
