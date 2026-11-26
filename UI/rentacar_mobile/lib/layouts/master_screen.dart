@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../screens/home_screen.dart';
 import '../screens/profile_screen.dart';
+import '../screens/vehicle_list_screen.dart';
 import '../utils/app_theme.dart';
 
 class _TabEntry {
@@ -14,6 +15,7 @@ class _TabEntry {
 
 final List<_TabEntry> _tabs = [
   _TabEntry(HomeScreen.title, Icons.home_outlined, () => const HomeScreen()),
+  _TabEntry(VehicleListScreen.title, Icons.directions_car_outlined, () => const VehicleListScreen()),
   _TabEntry(ProfileScreen.title, Icons.person_outline, () => const ProfileScreen()),
 ];
 
