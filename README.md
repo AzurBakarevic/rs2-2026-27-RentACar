@@ -50,6 +50,11 @@ Desktop i mobilna aplikacija su u izradi; upute za njihovo pokretanje bit će do
 Sistem ima dvije uloge: Administrator (desktop aplikacija) i Korisnik (mobilna aplikacija).
 Ostali početni korisnici (npr. `amar.hodzic`) također imaju lozinku `test`.
 
+## Sistem preporuke
+
+Opis sistema preporuke vozila (podaci, algoritmi, objašnjenja i ponovno treniranje modela) je u
+[recommender-dokumentacija.md](recommender-dokumentacija.md).
+
 ## Izvori slika
 
 Slike vozila u početnim podacima (`RentACar/RentACar.Services/Database/SeedImages`) su fotografije s Wikimedia

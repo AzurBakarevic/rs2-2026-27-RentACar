@@ -6,6 +6,7 @@ using RentACar.Model.Requests;
 using RentACar.Services.Implementations;
 using RentACar.Services.Interfaces;
 using RentACar.Services.Mapping;
+using RentACar.Services.Recommendations;
 using RentACar.Services.ReservationStateMachine;
 using RentACar.Services.Validators;
 using RentACar.WebAPI.BackgroundServices;
@@ -59,10 +60,14 @@ builder.Services.AddScoped<IReservationJobService, ReservationJobService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddSingleton<RecommendationModelCache>();
+builder.Services.AddScoped<IRecommendationService, RecommendationService>();
+builder.Services.AddScoped<IRecommendationTrainingService, RecommendationTrainingService>();
 
 QuestPDF.Settings.License = LicenseType.Community;
 
 builder.Services.AddHostedService<ReservationJobsBackgroundService>();
+builder.Services.AddHostedService<RecommendationTrainingBackgroundService>();
 
 builder.Services.AddScoped<BaseReservationState>();
 builder.Services.AddScoped<InitialReservationState>();

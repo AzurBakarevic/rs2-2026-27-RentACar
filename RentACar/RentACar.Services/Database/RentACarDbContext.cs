@@ -22,6 +22,7 @@ public class RentACarDbContext(DbContextOptions<RentACarDbContext> options) : Db
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<PasswordResetCode> PasswordResetCodes => Set<PasswordResetCode>();
+    public DbSet<RecommendationModel> RecommendationModels => Set<RecommendationModel>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

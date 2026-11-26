@@ -362,6 +362,31 @@ namespace RentACar.Services.Migrations
                     b.ToTable("Payments");
                 });
 
+            modelBuilder.Entity("RentACar.Services.Database.RecommendationModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("DataHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("TrainedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RecommendationModels");
+                });
+
             modelBuilder.Entity("RentACar.Services.Database.Reservation", b =>
                 {
                     b.Property<int>("Id")
