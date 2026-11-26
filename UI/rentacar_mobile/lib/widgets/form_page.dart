@@ -31,26 +31,13 @@ class FormPage extends StatelessWidget {
 class ScreenHeader extends StatelessWidget {
   const ScreenHeader({super.key, required this.title});
 
-  static const double _buttonSize = 48;
-
   final String title;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SizedBox.square(
-          dimension: _buttonSize,
-          child: IconButton.outlined(
-            tooltip: 'Nazad',
-            onPressed: () => Navigator.maybePop(context),
-            style: IconButton.styleFrom(
-              side: const BorderSide(color: AppColors.border),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            icon: const Icon(Icons.chevron_left, color: AppColors.textDark),
-          ),
-        ),
+        const AppBackButton(),
         Expanded(
           child: Text(
             title,
@@ -58,8 +45,30 @@ class ScreenHeader extends StatelessWidget {
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textDark),
           ),
         ),
-        const SizedBox(width: _buttonSize),
+        const SizedBox(width: AppBackButton.size),
       ],
+    );
+  }
+}
+
+class AppBackButton extends StatelessWidget {
+  const AppBackButton({super.key});
+
+  static const double size = 48;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.square(
+      dimension: size,
+      child: IconButton.outlined(
+        tooltip: 'Nazad',
+        onPressed: () => Navigator.maybePop(context),
+        style: IconButton.styleFrom(
+          side: const BorderSide(color: AppColors.border),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        icon: const Icon(Icons.chevron_left, color: AppColors.textDark),
+      ),
     );
   }
 }
