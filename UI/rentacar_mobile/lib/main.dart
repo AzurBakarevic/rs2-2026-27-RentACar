@@ -2,7 +2,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/auth_provider.dart';
+import 'providers/category_provider.dart';
+import 'providers/fuel_type_provider.dart';
 import 'providers/profile_provider.dart';
+import 'providers/review_provider.dart';
+import 'providers/transmission_type_provider.dart';
+import 'providers/vehicle_provider.dart';
 import 'screens/login_screen.dart';
 import 'utils/app_theme.dart';
 import 'utils/session.dart';
@@ -22,6 +27,11 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => VehicleProvider()),
+        ChangeNotifierProvider(create: (_) => ReviewProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => FuelTypeProvider()),
+        ChangeNotifierProvider(create: (_) => TransmissionTypeProvider()),
       ],
       child: const RentACarApp(),
     ),
