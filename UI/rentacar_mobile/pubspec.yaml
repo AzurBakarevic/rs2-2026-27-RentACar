@@ -1,5 +1,5 @@
 name: rentacar_mobile
-description: "A new Flutter project."
+description: "RentACar mobilna aplikacija za korisnike."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -10,13 +10,21 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  material_ui: ^1.1.0
-  cupertino_icons: ^1.0.8
+  material_ui: ^1.11.1
+  provider: ^6.1.5+1
+  http: ^1.6.0
+  json_annotation: ^4.12.0
+  flutter_form_builder: ^11.0.0
+  file_picker: ^13.4.1
+  intl: ^0.20.3
+  http_parser: ^4.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  json_serializable: ^6.15.2
+  build_runner: ^2.17.1
 
 flutter:
   uses-material-design: true
