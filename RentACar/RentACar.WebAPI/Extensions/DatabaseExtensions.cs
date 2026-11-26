@@ -36,6 +36,18 @@ public static class DatabaseExtensions
             logger.LogInformation("Seeded images for {Count} vehicles.", seededImages);
         }
 
+        var seededProfileImages = await dbContext.SeedUserImagesAsync();
+        if (seededProfileImages > 0)
+        {
+            logger.LogInformation("Seeded profile images for {Count} users.", seededProfileImages);
+        }
+
+        var seededReservations = await dbContext.SeedReservationHistoryAsync();
+        if (seededReservations > 0)
+        {
+            logger.LogInformation("Seeded {Count} past reservations.", seededReservations);
+        }
+
         logger.LogInformation("Database is up to date.");
     }
 }

@@ -614,6 +614,24 @@ namespace RentACar.Services.Migrations
                             IsActive = true,
                             Name = "Ljetna sezona",
                             StartDate = new DateOnly(2027, 6, 15)
+                        },
+                        new
+                        {
+                            Id = 3,
+                            EndDate = new DateOnly(2026, 1, 5),
+                            IncreasePercentage = 10m,
+                            IsActive = true,
+                            Name = "Zimski praznici 2025/26",
+                            StartDate = new DateOnly(2025, 12, 20)
+                        },
+                        new
+                        {
+                            Id = 4,
+                            EndDate = new DateOnly(2026, 9, 15),
+                            IncreasePercentage = 20m,
+                            IsActive = true,
+                            Name = "Ljetna sezona 2026",
+                            StartDate = new DateOnly(2026, 6, 15)
                         });
                 });
 
@@ -736,7 +754,7 @@ namespace RentACar.Services.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "desktop@rentacar.ba",
                             FirstName = "Desktop",
                             IsActive = true,
@@ -752,7 +770,7 @@ namespace RentACar.Services.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             DriverLicenseNumber = "B1234567",
                             DriverLicenseValidUntil = new DateOnly(2030, 12, 31),
                             Email = "mobile@rentacar.ba",
@@ -766,6 +784,222 @@ namespace RentACar.Services.Migrations
                             RoleId = 2,
                             TokenVersion = 0,
                             Username = "mobile"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B2045871",
+                            DriverLicenseValidUntil = new DateOnly(2031, 5, 14),
+                            Email = "amar.hodzic@example.com",
+                            FirstName = "Amar",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Hodžić",
+                            PasswordHash = "lzE40nRVpxBs+MVoHgIdwA8/O5NS9dK3wHethUpCwns=",
+                            PasswordSalt = "9Uta9HEWzBKuy6UV1fVumg==",
+                            PhoneNumber = "+387 61 482 115",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "amar.hodzic"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B1187342",
+                            DriverLicenseValidUntil = new DateOnly(2029, 3, 2),
+                            Email = "senad.begovic@example.com",
+                            FirstName = "Senad",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Begović",
+                            PasswordHash = "P2yvjqSKQ+gRoilb91v5koztyp2YY12hhAcZSnCygqE=",
+                            PasswordSalt = "PFJxm05K4Z4U6BJurntsQQ==",
+                            PhoneNumber = "+387 62 315 904",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "senad.begovic"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B3390126",
+                            DriverLicenseValidUntil = new DateOnly(2032, 9, 21),
+                            Email = "kenan.mujic@example.com",
+                            FirstName = "Kenan",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Mujić",
+                            PasswordHash = "kMkhg2Ra+Khfp1fLb1RGwGt0z1FgxXi9a2xVLbG2MxE=",
+                            PasswordSalt = "3azjIXMUIVDGzOb/R19W7w==",
+                            PhoneNumber = "+387 61 774 230",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "kenan.mujic"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B2861457",
+                            DriverLicenseValidUntil = new DateOnly(2030, 1, 30),
+                            Email = "emir.delic@example.com",
+                            FirstName = "Emir",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Delić",
+                            PasswordHash = "45ZaA048t1kSMdMtZN9cXwFdcxxGe573HPfZpTqQ+eM=",
+                            PasswordSalt = "uQnOdmkhAmNggVXDv2U/oA==",
+                            PhoneNumber = "+387 63 208 657",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "emir.delic"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B3012784",
+                            DriverLicenseValidUntil = new DateOnly(2033, 6, 8),
+                            Email = "haris.sabic@example.com",
+                            FirstName = "Haris",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Šabić",
+                            PasswordHash = "TFqxyzCPJmdwqd0lit6jWSGDbcX4YLGmYLtgqZlJ6r4=",
+                            PasswordSalt = "T6DZwYRtb5t5AzwGCkPoQA==",
+                            PhoneNumber = "+387 65 541 398",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "haris.sabic"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B3547219",
+                            DriverLicenseValidUntil = new DateOnly(2034, 2, 17),
+                            Email = "tarik.kovacevic@example.com",
+                            FirstName = "Tarik",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Kovačević",
+                            PasswordHash = "XDKuFLEyNy3uRt7QZFINkdtWoFjWdgi94FroONFTLEE=",
+                            PasswordSalt = "Khlnvdj0evmCcBSlWePOWg==",
+                            PhoneNumber = "+387 66 129 870",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "tarik.kovacevic"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B2493068",
+                            DriverLicenseValidUntil = new DateOnly(2031, 11, 3),
+                            Email = "lejla.hasic@example.com",
+                            FirstName = "Lejla",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Hasić",
+                            PasswordHash = "AkRRBr1+3epfdxee5s+3NJ2axyMofOysbSMSjVXbXRE=",
+                            PasswordSalt = "wQ7OxgBgjaMEzhSOBEatXQ==",
+                            PhoneNumber = "+387 61 903 462",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "lejla.hasic"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B1958340",
+                            DriverLicenseValidUntil = new DateOnly(2029, 8, 25),
+                            Email = "amina.omerovic@example.com",
+                            FirstName = "Amina",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Omerović",
+                            PasswordHash = "mSbIM9LETI4VbpPdQdAErACvl2XxhgFxSmTredIZew4=",
+                            PasswordSalt = "K02GgsZdenkWUtRZAZ8uPA==",
+                            PhoneNumber = "+387 62 650 781",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "amina.omerovic"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B2718903",
+                            DriverLicenseValidUntil = new DateOnly(2032, 4, 12),
+                            Email = "selma.karic@example.com",
+                            FirstName = "Selma",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Karić",
+                            PasswordHash = "WcPz9siPE2OiYjzFo3T4Ejuyzannptp9+j7o3dKtjnM=",
+                            PasswordSalt = "52o15A9Ov9G5tj8DP7UKrQ==",
+                            PhoneNumber = "+387 61 237 514",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "selma.karic"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B3204675",
+                            DriverLicenseValidUntil = new DateOnly(2033, 10, 9),
+                            Email = "ajla.mehmedovic@example.com",
+                            FirstName = "Ajla",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Mehmedović",
+                            PasswordHash = "ZkTYwE0+sCbPIxEQ3FLosvN8voWhxSHk2my+EAcQPwo=",
+                            PasswordSalt = "2rqNRUP5FiPTMVnDdBYIvw==",
+                            PhoneNumber = "+387 63 486 029",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "ajla.mehmedovic"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B1640592",
+                            DriverLicenseValidUntil = new DateOnly(2030, 7, 19),
+                            Email = "merima.avdic@example.com",
+                            FirstName = "Merima",
+                            IsActive = false,
+                            IsDeleted = false,
+                            LastName = "Avdić",
+                            PasswordHash = "MKWjXeSrzESg2il8YJrms3qpX79hxNzSVD4I1mG20cc=",
+                            PasswordSalt = "YdG9VTrIAys4Vn59HsyuUg==",
+                            PhoneNumber = "+387 61 815 346",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "merima.avdic"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DriverLicenseNumber = "B3681240",
+                            DriverLicenseValidUntil = new DateOnly(2034, 12, 1),
+                            Email = "dzana.softic@example.com",
+                            FirstName = "Džana",
+                            IsActive = true,
+                            IsDeleted = false,
+                            LastName = "Softić",
+                            PasswordHash = "ogyFhNie3Qehc9zQT1EYjfdtGr+coquO7je/AfqToSE=",
+                            PasswordSalt = "OAfAfPJU6wz8cPuxVP2xrg==",
+                            PhoneNumber = "+387 62 097 153",
+                            RoleId = 2,
+                            TokenVersion = 0,
+                            Username = "dzana.softic"
                         });
                 });
 
@@ -842,7 +1076,7 @@ namespace RentACar.Services.Migrations
                         {
                             Id = 1,
                             CategoryId = 2,
-                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Pouzdan kompaktni automobil, idealan za grad i duža putovanja.",
                             FuelTypeId = 2,
                             IsActive = true,
@@ -857,7 +1091,7 @@ namespace RentACar.Services.Migrations
                         {
                             Id = 2,
                             CategoryId = 3,
-                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Prostrana limuzina sa velikim prtljažnikom.",
                             FuelTypeId = 2,
                             IsActive = true,
@@ -872,7 +1106,7 @@ namespace RentACar.Services.Migrations
                         {
                             Id = 3,
                             CategoryId = 5,
-                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Hibridni SUV sa pogonom na sva četiri točka.",
                             FuelTypeId = 3,
                             IsActive = true,
@@ -887,7 +1121,7 @@ namespace RentACar.Services.Migrations
                         {
                             Id = 4,
                             CategoryId = 1,
-                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Ekonomičan gradski automobil.",
                             FuelTypeId = 1,
                             IsActive = false,
@@ -902,7 +1136,7 @@ namespace RentACar.Services.Migrations
                         {
                             Id = 5,
                             CategoryId = 5,
-                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Robustan SUV za loše puteve i planinu.",
                             FuelTypeId = 2,
                             IsActive = true,
@@ -917,7 +1151,7 @@ namespace RentACar.Services.Migrations
                         {
                             Id = 6,
                             CategoryId = 1,
-                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Mali automobil, jednostavan za parkiranje.",
                             FuelTypeId = 1,
                             IsActive = true,
@@ -932,7 +1166,7 @@ namespace RentACar.Services.Migrations
                         {
                             Id = 7,
                             CategoryId = 4,
-                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Karavan za porodična putovanja.",
                             FuelTypeId = 2,
                             IsActive = true,
@@ -947,7 +1181,7 @@ namespace RentACar.Services.Migrations
                         {
                             Id = 8,
                             CategoryId = 1,
-                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Hibridni gradski automobil sa malom potrošnjom.",
                             FuelTypeId = 3,
                             IsActive = true,
@@ -962,7 +1196,7 @@ namespace RentACar.Services.Migrations
                         {
                             Id = 9,
                             CategoryId = 5,
-                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Novi SUV sa bogatom opremom.",
                             FuelTypeId = 2,
                             IsActive = true,
@@ -977,7 +1211,7 @@ namespace RentACar.Services.Migrations
                         {
                             Id = 10,
                             CategoryId = 1,
-                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Praktičan mali automobil za grad.",
                             FuelTypeId = 1,
                             IsActive = true,

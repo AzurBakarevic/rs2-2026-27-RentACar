@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Slike seedanih vozila (DatabaseImageSeed); ime resursa ne zavisi od foldera, npr. SeedImages.vehicle-1.jpg -->
     <EmbeddedResource Include="Database\SeedImages\*.jpg" LogicalName="SeedImages.%(Filename)%(Extension)" />
   </ItemGroup>
 

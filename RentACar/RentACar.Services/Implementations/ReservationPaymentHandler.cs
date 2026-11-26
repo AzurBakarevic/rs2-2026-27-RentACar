@@ -111,7 +111,7 @@ public class ReservationPaymentHandler
 
     private async Task RefundAsync(Reservation reservation, Payment payment)
     {
-        var refund = await _gateway.RefundAsync(payment.StripePaymentIntentId, $"refund-payment-{payment.Id}",
+        var refund = await _gateway.RefundAsync(payment.StripePaymentIntentId, $"refund-{payment.StripePaymentIntentId}",
             CreateMetadata(reservation));
 
         if (refund.Status is not ("succeeded" or "pending"))

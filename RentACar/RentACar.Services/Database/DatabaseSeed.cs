@@ -5,7 +5,7 @@ namespace RentACar.Services.Database;
 
 public static class DatabaseSeed
 {
-    internal static readonly DateTime SeedDate = new(2026, 11, 1, 0, 0, 0, DateTimeKind.Utc);
+    internal static readonly DateTime SeedDate = new(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     public static void Seed(this ModelBuilder modelBuilder)
     {
@@ -43,7 +43,31 @@ public static class DatabaseSeed
                 IsActive = true,
                 CreatedAt = SeedDate,
                 RoleId = 2
-            });
+            },
+            Customer(3, "Amar", "Hodžić", "+387 61 482 115", "B2045871", new DateOnly(2031, 5, 14),
+                "lzE40nRVpxBs+MVoHgIdwA8/O5NS9dK3wHethUpCwns=", "9Uta9HEWzBKuy6UV1fVumg=="),
+            Customer(4, "Senad", "Begović", "+387 62 315 904", "B1187342", new DateOnly(2029, 3, 2),
+                "P2yvjqSKQ+gRoilb91v5koztyp2YY12hhAcZSnCygqE=", "PFJxm05K4Z4U6BJurntsQQ=="),
+            Customer(5, "Kenan", "Mujić", "+387 61 774 230", "B3390126", new DateOnly(2032, 9, 21),
+                "kMkhg2Ra+Khfp1fLb1RGwGt0z1FgxXi9a2xVLbG2MxE=", "3azjIXMUIVDGzOb/R19W7w=="),
+            Customer(6, "Emir", "Delić", "+387 63 208 657", "B2861457", new DateOnly(2030, 1, 30),
+                "45ZaA048t1kSMdMtZN9cXwFdcxxGe573HPfZpTqQ+eM=", "uQnOdmkhAmNggVXDv2U/oA=="),
+            Customer(7, "Haris", "Šabić", "+387 65 541 398", "B3012784", new DateOnly(2033, 6, 8),
+                "TFqxyzCPJmdwqd0lit6jWSGDbcX4YLGmYLtgqZlJ6r4=", "T6DZwYRtb5t5AzwGCkPoQA=="),
+            Customer(8, "Tarik", "Kovačević", "+387 66 129 870", "B3547219", new DateOnly(2034, 2, 17),
+                "XDKuFLEyNy3uRt7QZFINkdtWoFjWdgi94FroONFTLEE=", "Khlnvdj0evmCcBSlWePOWg=="),
+            Customer(9, "Lejla", "Hasić", "+387 61 903 462", "B2493068", new DateOnly(2031, 11, 3),
+                "AkRRBr1+3epfdxee5s+3NJ2axyMofOysbSMSjVXbXRE=", "wQ7OxgBgjaMEzhSOBEatXQ=="),
+            Customer(10, "Amina", "Omerović", "+387 62 650 781", "B1958340", new DateOnly(2029, 8, 25),
+                "mSbIM9LETI4VbpPdQdAErACvl2XxhgFxSmTredIZew4=", "K02GgsZdenkWUtRZAZ8uPA=="),
+            Customer(11, "Selma", "Karić", "+387 61 237 514", "B2718903", new DateOnly(2032, 4, 12),
+                "WcPz9siPE2OiYjzFo3T4Ejuyzannptp9+j7o3dKtjnM=", "52o15A9Ov9G5tj8DP7UKrQ=="),
+            Customer(12, "Ajla", "Mehmedović", "+387 63 486 029", "B3204675", new DateOnly(2033, 10, 9),
+                "ZkTYwE0+sCbPIxEQ3FLosvN8voWhxSHk2my+EAcQPwo=", "2rqNRUP5FiPTMVnDdBYIvw=="),
+            Customer(13, "Merima", "Avdić", "+387 61 815 346", "B1640592", new DateOnly(2030, 7, 19),
+                "MKWjXeSrzESg2il8YJrms3qpX79hxNzSVD4I1mG20cc=", "YdG9VTrIAys4Vn59HsyuUg==", isActive: false),
+            Customer(14, "Džana", "Softić", "+387 62 097 153", "B3681240", new DateOnly(2034, 12, 1),
+                "ogyFhNie3Qehc9zQT1EYjfdtGr+coquO7je/AfqToSE=", "OAfAfPJU6wz8cPuxVP2xrg=="));
 
         modelBuilder.Entity<Brand>().HasData(
             new Brand { Id = 1, Name = "Volkswagen" },
@@ -118,8 +142,50 @@ public static class DatabaseSeed
                 StartDate = new DateOnly(2027, 6, 15),
                 EndDate = new DateOnly(2027, 9, 15),
                 IncreasePercentage = 20m
+            },
+            new SeasonalPrice
+            {
+                Id = 3,
+                Name = "Zimski praznici 2025/26",
+                StartDate = new DateOnly(2025, 12, 20),
+                EndDate = new DateOnly(2026, 1, 5),
+                IncreasePercentage = 10m
+            },
+            new SeasonalPrice
+            {
+                Id = 4,
+                Name = "Ljetna sezona 2026",
+                StartDate = new DateOnly(2026, 6, 15),
+                EndDate = new DateOnly(2026, 9, 15),
+                IncreasePercentage = 20m
             });
     }
+
+    private static User Customer(int id, string firstName, string lastName, string phoneNumber, string driverLicenseNumber,
+        DateOnly driverLicenseValidUntil, string passwordHash, string passwordSalt, bool isActive = true)
+    {
+        var username = $"{Ascii(firstName)}.{Ascii(lastName)}";
+
+        return new User
+        {
+            Id = id,
+            FirstName = firstName,
+            LastName = lastName,
+            Email = $"{username}@example.com",
+            PhoneNumber = phoneNumber,
+            Username = username,
+            PasswordHash = passwordHash,
+            PasswordSalt = passwordSalt,
+            DriverLicenseNumber = driverLicenseNumber,
+            DriverLicenseValidUntil = driverLicenseValidUntil,
+            IsActive = isActive,
+            CreatedAt = SeedDate,
+            RoleId = 2
+        };
+    }
+
+    private static string Ascii(string value) => value.ToLowerInvariant()
+        .Replace("dž", "dz").Replace("č", "c").Replace("ć", "c").Replace("š", "s").Replace("ž", "z").Replace("đ", "dj");
 
     private static Vehicle Vehicle(int id, int modelId, string registration, int year, int categoryId,
         int fuelTypeId, int transmissionTypeId, decimal pricePerDay, string description, bool isActive = true) =>
