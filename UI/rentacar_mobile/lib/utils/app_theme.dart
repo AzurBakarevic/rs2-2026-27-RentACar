@@ -17,6 +17,8 @@ class AppColors {
   static const Color successBackground = Color(0xFFE6F6EC);
   static const Color warning = Color(0xFF8A5B00);
   static const Color warningBackground = Color(0xFFFDF1D0);
+  static const Color confirmed = Color(0xFF1D5FA8);
+  static const Color confirmedBackground = Color(0xFFE3EEFB);
   static const Color rating = Color(0xFFE0A100);
   static const Color imagePlaceholder = Color(0xFFE9ECF4);
   static const Color imagePlaceholderIcon = Color(0xFF94A3B8);
