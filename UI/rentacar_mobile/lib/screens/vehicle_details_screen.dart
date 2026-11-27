@@ -8,14 +8,18 @@ import '../providers/vehicle_provider.dart';
 import '../utils/api_client_exception.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatters.dart';
+import '../utils/rental_period.dart';
 import '../utils/utils_widgets.dart';
+import '../widgets/detail_row.dart';
 import '../widgets/form_page.dart';
 import '../widgets/vehicle_widgets.dart';
+import 'reservation_create_screen.dart';
 
 class VehicleDetailsScreen extends StatefulWidget {
-  const VehicleDetailsScreen({super.key, required this.vehicle});
+  const VehicleDetailsScreen({super.key, required this.vehicle, required this.period});
 
   final Vehicle vehicle;
+  final RentalPeriod period;
 
   @override
   State<VehicleDetailsScreen> createState() => _VehicleDetailsScreenState();
@@ -77,16 +81,16 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
                 Text(description, style: const TextStyle(fontSize: 16, height: 1.4, color: AppColors.textDark)),
               ],
               const SizedBox(height: 16),
-              _DetailRow(
+              DetailRow(
                 icon: Icons.local_gas_station_outlined,
                 label: 'Gorivo',
                 value: vehicle.fuelTypeName,
                 isFirst: true,
               ),
-              _DetailRow(icon: Icons.settings_outlined, label: 'Mjenjač', value: vehicle.transmissionTypeName),
-              _DetailRow(icon: Icons.event_seat_outlined, label: 'Sjedišta', value: '${vehicle.seatCount}'),
-              _DetailRow(icon: Icons.calendar_today_outlined, label: 'Godište', value: '${vehicle.productionYear}'),
-              _DetailRow(
+              DetailRow(icon: Icons.settings_outlined, label: 'Mjenjač', value: vehicle.transmissionTypeName),
+              DetailRow(icon: Icons.event_seat_outlined, label: 'Sjedišta', value: '${vehicle.seatCount}'),
+              DetailRow(icon: Icons.calendar_today_outlined, label: 'Godište', value: '${vehicle.productionYear}'),
+              DetailRow(
                 icon: Icons.payments_outlined,
                 label: 'Cijena po danu',
                 value: formatMoney(vehicle.pricePerDay),
@@ -102,6 +106,21 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: SafeArea(
+        child: DecoratedBox(
+          decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.border))),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+            child: FilledButton(onPressed: _openReservation, child: const Text('Rezerviši')),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openReservation() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ReservationCreateScreen(vehicle: _vehicle, period: widget.period)),
     );
   }
 
@@ -231,41 +250,6 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
         setState(() => _isLoadingMoreReviews = false);
       }
     }
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.icon, required this.label, required this.value, this.isFirst = false});
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final bool isFirst;
-
-  @override
-  Widget build(BuildContext context) {
-    const side = BorderSide(color: AppColors.border);
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        border: Border(top: isFirst ? side : BorderSide.none, bottom: side),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.primary),
-          const SizedBox(width: 16),
-          Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textDark)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: const TextStyle(fontSize: 16, color: AppColors.textDark),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

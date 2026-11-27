@@ -32,6 +32,7 @@ public class ReservationResponse
 
     public string VehicleName { get; set; } = string.Empty;
     public string VehicleRegistrationNumber { get; set; } = string.Empty;
+    public string VehicleCategoryName { get; set; } = string.Empty;
     public bool VehicleHasImage { get; set; }
 
     public List<string> AllowedActions { get; set; } = new();

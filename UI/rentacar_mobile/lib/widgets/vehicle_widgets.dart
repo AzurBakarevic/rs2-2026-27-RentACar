@@ -7,16 +7,28 @@ import '../utils/app_theme.dart';
 import '../utils/formatters.dart';
 
 class VehicleImage extends StatelessWidget {
-  const VehicleImage({
+  VehicleImage({
     super.key,
-    required this.vehicle,
+    required Vehicle vehicle,
+    this.width,
+    required this.height,
+    this.borderRadius = 12,
+    this.iconSize = 36,
+  })  : vehicleId = vehicle.id,
+        hasImage = vehicle.hasImage;
+
+  const VehicleImage.byId({
+    super.key,
+    required this.vehicleId,
+    required this.hasImage,
     this.width,
     required this.height,
     this.borderRadius = 12,
     this.iconSize = 36,
   });
 
-  final Vehicle vehicle;
+  final int vehicleId;
+  final bool hasImage;
   final double? width;
   final double height;
   final double borderRadius;
@@ -35,10 +47,10 @@ class VehicleImage extends StatelessWidget {
         );
 
         Widget child = placeholder;
-        if (vehicle.hasImage) {
+        if (hasImage) {
           final provider = context.read<VehicleProvider>();
           child = Image.network(
-            provider.imageUrl(vehicle.id),
+            provider.imageUrl(vehicleId),
             headers: provider.imageHeaders(),
             fit: BoxFit.cover,
             cacheWidth: (imageWidth * MediaQuery.devicePixelRatioOf(context)).round(),
