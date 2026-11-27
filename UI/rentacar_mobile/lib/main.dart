@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/category_provider.dart';
+import 'providers/equipment_provider.dart';
 import 'providers/fuel_type_provider.dart';
 import 'providers/profile_provider.dart';
+import 'providers/reservation_provider.dart';
 import 'providers/review_provider.dart';
 import 'providers/transmission_type_provider.dart';
 import 'providers/vehicle_provider.dart';
@@ -29,6 +31,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => VehicleProvider()),
         ChangeNotifierProvider(create: (_) => ReviewProvider()),
+        ChangeNotifierProvider(create: (_) => ReservationProvider()),
+        ChangeNotifierProvider(create: (_) => EquipmentProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => FuelTypeProvider()),
         ChangeNotifierProvider(create: (_) => TransmissionTypeProvider()),
