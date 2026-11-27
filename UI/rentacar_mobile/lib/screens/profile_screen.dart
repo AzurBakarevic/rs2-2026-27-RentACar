@@ -14,6 +14,7 @@ import '../widgets/form_page.dart';
 import '../widgets/notice_box.dart';
 import '../widgets/profile_avatar.dart';
 import 'password_change_screen.dart';
+import 'payment_history_screen.dart';
 import 'profile_edit_screen.dart';
 
 enum _ImageAction { pick, remove }
@@ -82,6 +83,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         icon: Icons.lock_outline,
         label: 'Promijeni lozinku',
         onTap: () => _open(const PasswordChangeScreen()),
+      ),
+      const SizedBox(height: 12),
+      _ActionTile(
+        icon: Icons.receipt_long_outlined,
+        label: PaymentHistoryScreen.title,
+        onTap: () => _open(const PaymentHistoryScreen()),
       ),
       const SizedBox(height: 28),
       OutlinedButton.icon(
