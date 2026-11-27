@@ -8,6 +8,7 @@ import '../models/search_result.dart';
 import '../models/vehicle.dart';
 import '../providers/category_provider.dart';
 import '../providers/fuel_type_provider.dart';
+import '../providers/reservation_provider.dart';
 import '../providers/transmission_type_provider.dart';
 import '../providers/vehicle_provider.dart';
 import '../utils/api_client_exception.dart';
@@ -60,6 +61,7 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
   String? _error;
   String? _periodError;
   int _requestId = 0;
+  late final ReservationProvider _reservationProvider;
 
   bool get _hasMore => _vehicles.length < _totalCount;
 
@@ -70,11 +72,13 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _reservationProvider = context.read<ReservationProvider>()..addListener(_loadVehicles);
     _refresh();
   }
 
   @override
   void dispose() {
+    _reservationProvider.removeListener(_loadVehicles);
     _searchTimer?.cancel();
     _scrollController.dispose();
     _searchController.dispose();
@@ -483,7 +487,7 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
   }
 
   void _openDetails(Vehicle vehicle) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => VehicleDetailsScreen(vehicle: vehicle)));
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => VehicleDetailsScreen(vehicle: vehicle, period: _period)));
   }
 }
 
