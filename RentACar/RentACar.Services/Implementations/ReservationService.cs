@@ -79,6 +79,14 @@ public class ReservationService : BaseReadService<Reservation, ReservationRespon
                 : query.Where(x => !ReservationStatuses.Active.Contains(x.Status));
         }
 
+        if (search.IsUpcoming.HasValue)
+        {
+            var now = DateTime.UtcNow;
+            query = search.IsUpcoming.Value
+                ? query.Where(x => x.PickupAt > now)
+                : query.Where(x => x.PickupAt <= now);
+        }
+
         if (search.From.HasValue)
         {
             var from = AgencyTime.AsUtc(search.From.Value);

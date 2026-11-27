@@ -11,6 +11,7 @@ public class ReservationSearchObject : BaseSearchObject
     public ReservationStatus? Status { get; set; }
 
     public bool? IsActive { get; set; }
+    public bool? IsUpcoming { get; set; }
 
     public DateTime? From { get; set; }
     public DateTime? To { get; set; }
